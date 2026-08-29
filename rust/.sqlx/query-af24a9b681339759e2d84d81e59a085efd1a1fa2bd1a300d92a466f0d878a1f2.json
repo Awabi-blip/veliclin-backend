@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL add_prescriptions($1, $2, $3, $4, $5, $6, $7, $8)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        "Date",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "af24a9b681339759e2d84d81e59a085efd1a1fa2bd1a300d92a466f0d878a1f2"
+}

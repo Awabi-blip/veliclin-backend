@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL reject_invitations($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1217e205fc556252c97da78af637d05ecca777973fa105f834a66755da12a611"
+}

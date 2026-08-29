@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n        schedule_id, \n        doctor_id, \n        time_shift_starts,\n        day_shift_starts as \"day_shift_starts: WorkingDays\",\n        time_shift_ends,\n        day_shift_ends as \"day_shift_ends: WorkingDays\"\n        FROM doctors_schedule \n        WHERE doctor_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "schedule_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "doctor_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "time_shift_starts",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 3,
+        "name": "day_shift_starts: WorkingDays",
+        "type_info": {
+          "Custom": {
+            "name": "e_working_days",
+            "kind": {
+              "Enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "time_shift_ends",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 5,
+        "name": "day_shift_ends: WorkingDays",
+        "type_info": {
+          "Custom": {
+            "name": "e_working_days",
+            "kind": {
+              "Enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5b22191844f3d9743aa2a73bf4e6f4097d375aba3af9fedc0c64b28a455eda52"
+}

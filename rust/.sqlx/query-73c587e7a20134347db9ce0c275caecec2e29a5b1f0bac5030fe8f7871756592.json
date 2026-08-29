@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL delete_doctor_schedule($1, $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "73c587e7a20134347db9ce0c275caecec2e29a5b1f0bac5030fe8f7871756592"
+}

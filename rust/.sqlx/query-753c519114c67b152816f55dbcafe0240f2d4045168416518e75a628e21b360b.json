@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO profiles (id, first_name, last_name, gender, DoB) VALUES \n    ($1, $2, $3, $4, $5)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Varchar",
+        {
+          "Custom": {
+            "name": "e_gender",
+            "kind": {
+              "Enum": [
+                "Male",
+                "Female"
+              ]
+            }
+          }
+        },
+        "Date"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "753c519114c67b152816f55dbcafe0240f2d4045168416518e75a628e21b360b"
+}

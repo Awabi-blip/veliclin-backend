@@ -1,0 +1,80 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            clinic_name AS \"clinic_name!\",\n            clinic_type AS \"clinic_type!: ClinicType\",\n            city_clinic_is_in AS \"city_clinic_is_in!\",\n            role_invited_for AS \"role_invited_for!: StaffRole\",\n            invited_by AS \"invited_by!\"\n        FROM view_invitations \n        WHERE invitation_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "clinic_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "clinic_type!: ClinicType",
+        "type_info": {
+          "Custom": {
+            "name": "e_clinic_type",
+            "kind": {
+              "Enum": [
+                "General_Clinic",
+                "Dental_Clinic",
+                "Maternity_Home",
+                "CMW_Clinic",
+                "Nursing_Home",
+                "Homeopathic_Clinic",
+                "Tibb_Clinic",
+                "Physiotherapy_Clinic",
+                "Rehabilitation_Centre",
+                "Aesthetic_Clinic",
+                "Diagnostic_Laboratory",
+                "Radiological_Imaging_Centre",
+                "Dialysis_Centre",
+                "Lithotripsy_Centre"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "city_clinic_is_in!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "role_invited_for!: StaffRole",
+        "type_info": {
+          "Custom": {
+            "name": "e_staff_role",
+            "kind": {
+              "Enum": [
+                "Doctor",
+                "Owner",
+                "Manager",
+                "Receptionist"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "invited_by!",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "55110aab5a64d41a32d4c4caba7d5688166fe85a658d1a4a96f96d2243c7d204"
+}

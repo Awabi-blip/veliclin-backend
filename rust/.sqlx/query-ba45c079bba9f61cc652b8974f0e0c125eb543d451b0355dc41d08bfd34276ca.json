@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL send_invitations($1, $2::e_staff_role)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        },
+        {
+          "Custom": {
+            "name": "e_staff_role",
+            "kind": {
+              "Enum": [
+                "Doctor",
+                "Owner",
+                "Manager",
+                "Receptionist"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ba45c079bba9f61cc652b8974f0e0c125eb543d451b0355dc41d08bfd34276ca"
+}

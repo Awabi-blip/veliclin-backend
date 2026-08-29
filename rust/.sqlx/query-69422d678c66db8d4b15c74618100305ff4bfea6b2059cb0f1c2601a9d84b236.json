@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE appointments\n        SET status = 'On_going'::e_appointment_status\n        WHERE appointment_id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "69422d678c66db8d4b15c74618100305ff4bfea6b2059cb0f1c2601a9d84b236"
+}

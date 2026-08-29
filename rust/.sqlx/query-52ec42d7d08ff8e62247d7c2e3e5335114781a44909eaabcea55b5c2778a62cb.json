@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT patient_id   as \"patient_id!\",\n                   full_name    as \"full_name!\",\n                   phone_number as \"phone_number!\",\n                   email        as \"email!\",\n                   gender       as \"gender!: Gender\"\n            FROM view_patients_as_staff\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "patient_id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "full_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "phone_number!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "email!",
+        "type_info": {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "gender!: Gender",
+        "type_info": {
+          "Custom": {
+            "name": "e_gender",
+            "kind": {
+              "Enum": [
+                "Male",
+                "Female"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "52ec42d7d08ff8e62247d7c2e3e5335114781a44909eaabcea55b5c2778a62cb"
+}

@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT register_users($1, $2, $3) AS \"response!: sqlx::types::Json<AuthResponse>\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "response!: sqlx::types::Json<AuthResponse>",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "14fa608c6397a75bcbf50847e5301c741218f955189138352e9c8c34256508e9"
+}

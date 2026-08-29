@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE appointments\n        SET status = 'Cancelled'::e_appointment_status\n        WHERE appointment_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1cdc73d96b168008ac9b24620170559edf0182e8a8f1d3821bb6a7f1ba351cab"
+}

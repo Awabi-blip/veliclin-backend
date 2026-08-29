@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL delete_clinics()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "9b55ada26955c0bb56e39a7177f40aa1d47ceddc970bcf732b698db4f8f25c2e"
+}

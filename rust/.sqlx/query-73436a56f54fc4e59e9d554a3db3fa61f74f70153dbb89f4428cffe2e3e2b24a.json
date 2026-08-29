@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " \n            SELECT \n                doctor_name as \"doctor_name!\",\n                patient_name as \"patient_name!\",\n                appointment_id as \"appointment_id!\",\n                scheduled_at as \"scheduled_at!\",\n                ends_at as \"ends_at!\"\n                FROM view_appointments_as_staffs WHERE \n                status = $1::e_appointment_status",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "doctor_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "patient_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "appointment_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "scheduled_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "ends_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "e_appointment_status",
+            "kind": {
+              "Enum": [
+                "Scheduled",
+                "Completed",
+                "Cancelled",
+                "On_going"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "73436a56f54fc4e59e9d554a3db3fa61f74f70153dbb89f4428cffe2e3e2b24a"
+}

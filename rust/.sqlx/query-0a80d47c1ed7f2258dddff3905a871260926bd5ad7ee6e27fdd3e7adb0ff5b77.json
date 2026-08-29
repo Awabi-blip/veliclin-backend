@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL add_data_to_appointment($1, $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Varchar",
+        "Numeric"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0a80d47c1ed7f2258dddff3905a871260926bd5ad7ee6e27fdd3e7adb0ff5b77"
+}

@@ -1,0 +1,84 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            invitation_id AS \"invitation_id!\",\n            clinic_name AS \"clinic_name!\",\n            clinic_type AS \"clinic_type!: ClinicType\",\n            city_clinic_is_in AS \"city_clinic_is_in!\",\n            role_invited_for AS \"role_invited_for!: StaffRole\",\n            invited_by AS \"invited_by!\"\n        FROM view_invitations\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "invitation_id!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "clinic_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "clinic_type!: ClinicType",
+        "type_info": {
+          "Custom": {
+            "name": "e_clinic_type",
+            "kind": {
+              "Enum": [
+                "General_Clinic",
+                "Dental_Clinic",
+                "Maternity_Home",
+                "CMW_Clinic",
+                "Nursing_Home",
+                "Homeopathic_Clinic",
+                "Tibb_Clinic",
+                "Physiotherapy_Clinic",
+                "Rehabilitation_Centre",
+                "Aesthetic_Clinic",
+                "Diagnostic_Laboratory",
+                "Radiological_Imaging_Centre",
+                "Dialysis_Centre",
+                "Lithotripsy_Centre"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "city_clinic_is_in!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "role_invited_for!: StaffRole",
+        "type_info": {
+          "Custom": {
+            "name": "e_staff_role",
+            "kind": {
+              "Enum": [
+                "Doctor",
+                "Owner",
+                "Manager",
+                "Receptionist"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "invited_by!",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "82d8e7cd44a93d66a746f0bb47a8f48d6ab68cc4b71a0d7031b18a1d88d8f47f"
+}

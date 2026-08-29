@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            patient_name as \"patient_name!\",\n            appointment_id as \"appointment_id!\",\n            note,\n            diagnosis,\n            scheduled_at as \"scheduled_at!\",\n            ends_at as \"ends_at!\",\n            meeting_link,\n            fee\n            FROM view_appointments_as_doctors WHERE \n            status = $1::e_appointment_status",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "patient_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "appointment_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "note",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "diagnosis",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "scheduled_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "ends_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "meeting_link",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "fee",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "e_appointment_status",
+            "kind": {
+              "Enum": [
+                "Scheduled",
+                "Completed",
+                "Cancelled",
+                "On_going"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "60cdf604085ec4966d4facc5578a86d5b57867f4e5733b5bcfdd8b570cdf6bd4"
+}

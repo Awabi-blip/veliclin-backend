@@ -1,0 +1,98 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    clinic_name AS \"clinic_name!\",\n                    clinic_type AS \"clinic_type!: ClinicType\",\n                    city_name AS \"city_name!\",\n                    address AS \"address!\",\n                    contact_number AS \"contact_number!\",\n                    banner_url AS \"banner_url!\",\n                    timezone AS \"timezone!: String\",\n                    plan::text AS \"plan!\",\n                    expires_at AS \"expires_at!\",\n                    all_visibility AS \"all_visibility!\"\n                FROM clinics\n                WHERE clinic_id = $1\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "clinic_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "clinic_type!: ClinicType",
+        "type_info": {
+          "Custom": {
+            "name": "e_clinic_type",
+            "kind": {
+              "Enum": [
+                "General_Clinic",
+                "Dental_Clinic",
+                "Maternity_Home",
+                "CMW_Clinic",
+                "Nursing_Home",
+                "Homeopathic_Clinic",
+                "Tibb_Clinic",
+                "Physiotherapy_Clinic",
+                "Rehabilitation_Centre",
+                "Aesthetic_Clinic",
+                "Diagnostic_Laboratory",
+                "Radiological_Imaging_Centre",
+                "Dialysis_Centre",
+                "Lithotripsy_Centre"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "city_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "address!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "contact_number!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "banner_url!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "timezone!: String",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "plan!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "expires_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "all_visibility!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      null,
+      false,
+      false
+    ]
+  },
+  "hash": "090a8f8d4145e9df181bf00f5134ac041d3caeb97e06f3eef3c7935e68070fb6"
+}

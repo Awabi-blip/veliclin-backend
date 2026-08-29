@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL create_new_clinic($1, $2::e_clinic_type, $3, $4, $5, $6, \n    $7, $8, $9::e_staff_role)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        {
+          "Custom": {
+            "name": "e_clinic_type",
+            "kind": {
+              "Enum": [
+                "General_Clinic",
+                "Dental_Clinic",
+                "Maternity_Home",
+                "CMW_Clinic",
+                "Nursing_Home",
+                "Homeopathic_Clinic",
+                "Tibb_Clinic",
+                "Physiotherapy_Clinic",
+                "Rehabilitation_Centre",
+                "Aesthetic_Clinic",
+                "Diagnostic_Laboratory",
+                "Radiological_Imaging_Centre",
+                "Dialysis_Centre",
+                "Lithotripsy_Centre"
+              ]
+            }
+          }
+        },
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Bool",
+        "Varchar",
+        {
+          "Custom": {
+            "name": "e_staff_role",
+            "kind": {
+              "Enum": [
+                "Doctor",
+                "Owner",
+                "Manager",
+                "Receptionist"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "efa1266dd604f66459472a356ab51f10672a3011284259cc374d13ed1ea262b8"
+}

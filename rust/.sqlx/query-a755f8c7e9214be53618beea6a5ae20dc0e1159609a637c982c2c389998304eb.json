@@ -1,0 +1,80 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    clinic_name AS \"clinic_name!\",\n                    clinic_type AS \"clinic_type!: ClinicType\",\n                    city_name AS \"city_name!\",\n                    address AS \"address!\",\n                    contact_number AS \"contact_number!\",\n                    banner_url AS \"banner_url!\",\n                    timezone AS \"timezone!: String\"\n                FROM clinics\n                WHERE clinic_id = $1\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "clinic_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "clinic_type!: ClinicType",
+        "type_info": {
+          "Custom": {
+            "name": "e_clinic_type",
+            "kind": {
+              "Enum": [
+                "General_Clinic",
+                "Dental_Clinic",
+                "Maternity_Home",
+                "CMW_Clinic",
+                "Nursing_Home",
+                "Homeopathic_Clinic",
+                "Tibb_Clinic",
+                "Physiotherapy_Clinic",
+                "Rehabilitation_Centre",
+                "Aesthetic_Clinic",
+                "Diagnostic_Laboratory",
+                "Radiological_Imaging_Centre",
+                "Dialysis_Centre",
+                "Lithotripsy_Centre"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "city_name!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "address!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "contact_number!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "banner_url!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "timezone!: String",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "a755f8c7e9214be53618beea6a5ae20dc0e1159609a637c982c2c389998304eb"
+}

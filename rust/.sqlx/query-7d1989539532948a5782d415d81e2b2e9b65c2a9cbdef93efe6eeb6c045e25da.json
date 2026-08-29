@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL insert_doctors_schedule($1, $2::e_working_days, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "e_working_days",
+            "kind": {
+              "Enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            }
+          }
+        },
+        "Time",
+        "Time"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7d1989539532948a5782d415d81e2b2e9b65c2a9cbdef93efe6eeb6c045e25da"
+}

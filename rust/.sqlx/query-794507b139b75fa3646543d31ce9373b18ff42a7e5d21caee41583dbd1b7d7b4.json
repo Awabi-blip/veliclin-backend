@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CALL remove_staff_from_clinics($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "794507b139b75fa3646543d31ce9373b18ff42a7e5d21caee41583dbd1b7d7b4"
+}

@@ -1,0 +1,123 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT patient_id  as  \"patient_id!\",\n                   full_name       as  \"full_name!\",\n                   phone_number    as  \"phone_number!\",\n                   email           as  \"email\",\n                   gender          as  \"gender!: Gender\",\n                   neurotype       as  \"neurotype: Neurotype\",\n                   blood_type      as  \"blood_type: BloodType\",\n                   height_cm       as  \"height_cm\",\n                   weight_kg       as  \"weight_kg\",\n                   note            as  \"note\"\n            FROM view_patients_as_doctors\n            WHERE patient_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "patient_id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "full_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "phone_number!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "email",
+        "type_info": {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "gender!: Gender",
+        "type_info": {
+          "Custom": {
+            "name": "e_gender",
+            "kind": {
+              "Enum": [
+                "Male",
+                "Female"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "neurotype: Neurotype",
+        "type_info": {
+          "Custom": {
+            "name": "e_neurotype",
+            "kind": {
+              "Enum": [
+                "Typical",
+                "ASD",
+                "ADHD",
+                "OCD",
+                "Dyslexia",
+                "Dyspraxia",
+                "Dyscalculia",
+                "Dysgraphia"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "blood_type: BloodType",
+        "type_info": {
+          "Custom": {
+            "name": "e_blood_type",
+            "kind": {
+              "Enum": [
+                "A+",
+                "A-",
+                "B+",
+                "B-",
+                "AB+",
+                "AB-",
+                "O+",
+                "O-"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "height_cm",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "weight_kg",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 9,
+        "name": "note",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "eb57986fadb2e424f1c4308b0a45622f0367282bd5b971ba3acdb2c1763edfd9"
+}
