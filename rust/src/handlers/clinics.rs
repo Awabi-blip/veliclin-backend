@@ -80,27 +80,26 @@ pub async fn create_clinic(
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
 
-    let sqlx::types::Json(auth): sqlx::types::Json<AuthResponse> =
-        sqlx::query_scalar!(
-            r#"
-            SELECT create_new_clinic(
-                $1, $2::e_clinic_type, $3, $4, $5, $6, $7, $8, $9::e_staff_role
-            )
-            AS "response!: sqlx::types::Json<AuthResponse>"
-            "#,
-            body.clinic_name,
-            body.clinic_type as _,
-            body.city,
-            body.address,
-            body.contact_number,
-            body.banner_url,
-            body.all_visibility,
-            body.timezone.name(),
-            body.self_role as _
+    let sqlx::types::Json(auth): sqlx::types::Json<AuthResponse> = sqlx::query_scalar!(
+        r#"
+        SELECT create_new_clinic(
+            $1, $2::e_clinic_type, $3, $4, $5, $6, $7, $8, $9::e_staff_role
         )
-        .fetch_one(&mut *conn)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        AS "response!: sqlx::types::Json<AuthResponse>"
+        "#,
+        body.clinic_name,
+        body.clinic_type as _,
+        body.city,
+        body.address,
+        body.contact_number,
+        body.banner_url,
+        body.all_visibility,
+        body.timezone.name(),
+        body.self_role as _
+    )
+    .fetch_one(&mut *conn)
+    .await
+    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
                                         
     let redirect_page = match_auth(auth, &cookie)?;
     

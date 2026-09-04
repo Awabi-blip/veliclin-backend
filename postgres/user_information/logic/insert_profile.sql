@@ -1,3 +1,5 @@
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
+
 CREATE OR REPLACE FUNCTION create_profile(
 f_user_id UUID,
 f_first_name VARCHAR(50), 

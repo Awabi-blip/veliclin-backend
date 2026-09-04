@@ -1,4 +1,4 @@
--- Active: 1778842009804@@127.0.0.1@5432@cliniqo
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 --create a function to create a new clinic
 --in that function, make a new clinic, and make the owner the auth.uid() guy
 CALL create_new_clinic(
@@ -66,7 +66,7 @@ BEGIN
     IF p_self_role IS NOT NULL THEN
         INSERT INTO staffs_in_clinics (
             clinic_id, staff_id, staff_role
-        ) VALUES (v_clinic_id, owner_id, p_self_role);
+        ) VALUES (v_clinic_id, v_owner_id, p_self_role);
     END IF;
 
     SELECT determine_auth_response(v_owner_id) 
