@@ -7,8 +7,11 @@ select * from profiles;
 select * from app_users;
 
 CALL send_invitations(
-'ayesha@gmail.com',
+'darkdaredevil20@gmail.com',
 'Doctor'::e_staff_role);
+
+set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+
 
 CREATE OR REPLACE PROCEDURE send_invitations(
     p_receiver_email CITEXT,
@@ -80,46 +83,50 @@ END;
 $$ language plpgsql;
 
 
-
--- select clinic_id into v_clinic_id
--- from staffs_in_clinics
--- where staff_id = v_sender_id;
 CREATE INDEX idx_send_invitations ON staffs_in_clinics (
     staff_id
 ) INCLUDE (clinic_id);
 
 
+select * from app_users;
 
-CALL accept_invitations(3);
+select * from invitations;
+
+delete from invitations;
+
+CALL accept_invitations(7);
+
+select * from invitations 
+where invitation_id = 4
+and   receiver_id   = '01a07759-3b0e-7c2a-980d-fe8ee75586d3'::UUID;
+
+select * from invitations;
+
 
 CREATE OR REPLACE PROCEDURE accept_invitations(f_invitation_id INT)
+SECURITY DEFINER
 AS $$
 DECLARE
     v_accepter_id UUID := current_setting('myapp.user_id')::UUID;
-    v_clinic_id UUID;
-    v_role_invited_for E_staff_role;
+    v_clinic_id UUID   := (select clinic_id from invitations where invitation_id = f_invitation_id);
+    v_role_invited_for e_staff_role := (select role_invited_for from invitations where invitation_id = f_invitation_id);
     v_accepter_email CITEXT := (SELECT email FROM app_users WHERE id = v_accepter_id);
 
 BEGIN
     -- better to be explicit, even tho it would be fine if i missed this
     -- the schema enforces not null, so querying by null later would result in not found anyway
     -- better to prevent querying from happening
-
-    if (v_accepter_id is null) or (v_accepter_email is null)
+    if (v_accepter_id is null) or (v_accepter_email is null) or (v_clinic_id is null)
         then raise exception 'Unauthorised';
     end if;
+
+    if not exists (
+        select 1 from invitations 
+        where invitation_id = f_invitation_id
+        and   receiver_id   = v_accepter_id
+    ) then raise exception 'the inv id does not belong to you';
+    end if;
     
-    SELECT clinic_id, role_invited_for
-    INTO v_clinic_id, v_role_invited_for
-    FROM invitations 
-        WHERE invitation_id   = f_invitation_id
-        AND   receiver_email  = v_accepter_email
-        AND   receiver_id     = v_accepter_id;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'not found';
-    END IF;
-
     INSERT INTO staffs_in_clinics(
         staff_id,
         clinic_id,
@@ -150,7 +157,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE reject_invitations(f_invitation_id INT)
 AS $$
 DECLARE
-    v_accepter_id UUID := current_setting('myapp.user_id')::UUID;
+    rejecter_id UUID := current_setting('myapp.user_id')::UUID;
     v_clinic_id UUID;
     v_role_invited_for E_staff_role;
     v_accepter_email CITEXT := (SELECT email FROM app_users WHERE id = v_accepter_id);
@@ -164,16 +171,12 @@ BEGIN
         then raise exception 'Unauthorised';
     end if;
 
-    SELECT clinic_id, role_invited_for
-    INTO v_clinic_id, v_role_invited_for
-    FROM invitations 
-        WHERE invitation_id = f_invitation_id
-        AND receiver_email  = v_accepter_email
-        AND receiver_id     = v_accepter_id;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'not found';
-    END IF;
+    if not exists (
+        select 1 from invitations 
+        where invitation_id = f_invitation_id
+        and   receiver_id   = rejecter_id
+    ) then raise exception 'the inv id does not belong to you';
+    end if;
     
     -- again better to be explicit
     -- if the above condition is evaluated

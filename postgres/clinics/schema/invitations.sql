@@ -9,9 +9,28 @@ CREATE TABLE IF NOT EXISTS invitations(
     PRIMARY KEY ("invitation_id"),
     UNIQUE ("sender_id", "receiver_email"),
     FOREIGN KEY ("sender_email", "sender_id") REFERENCES app_users("email", "id"),
-    FOREIGN KEY ("receiver_email", "receiver_id") REFERENCES app_users("email", "id")
+    FOREIGN KEY ("receiver_email", "receiver_id") REFERENCES app_users("email", "id"),
+    FOREIGN KEY (sender_id, clinic_id) REFERENCES clinics(owner_id, clinic_id)
 );
 
+
+ALTER TABLE invitations
+ADD CONSTRAINT invitations_sender_clinic_fk
+FOREIGN KEY (sender_id, clinic_id)
+REFERENCES clinics(owner_id, clinic_id);
+
+ALTER TABLE invitations
+ADD CONSTRAINT invitations_sender_receiver_unique
+UNIQUE (sender_id, receiver_id);
+
+ALTER TABLE invitations
+ADD CONSTRAINT invitations_sender_receiver_not_same
+CHECK (
+    receiver_email <> sender_email
+    AND receiver_id <> sender_id
+);
+
+select * from invitations;
 
 CREATE VIEW view_invitations
 WITH (security_invoker = true) AS

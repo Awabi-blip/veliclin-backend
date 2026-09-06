@@ -34,3 +34,11 @@ begin
     where  staff_id  = v_victim_id;
 end;
 $$ language plpgsql;
+
+
+SELECT enumlabel
+FROM pg_enum
+WHERE enumtypid = 'e_appointment_status'::regtype
+ORDER BY enumsortorder;
+
+select * from invitations;

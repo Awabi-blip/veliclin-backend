@@ -33,6 +33,7 @@ pub struct InvitationInformation {
     pub role_invited_for : StaffRole
 }
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn send_invitation(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -59,7 +60,7 @@ pub async fn send_invitation(
     .await
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-    sqlx::query!("CALL send_invitations($1, $2::e_staff_role)",
+    sqlx::query!("CALL send_invitations($1::citext, $2::e_staff_role)",
     body.receiver_email,
     body.role_invited_for as _)
     .execute(&mut *conn)
@@ -71,6 +72,8 @@ pub async fn send_invitation(
     }))
 }
 
+
+#[tracing::instrument(skip(db, cookie, staff_id), err(Debug))]
 pub async fn remove_staff_from_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -120,6 +123,7 @@ pub struct Invitations{
     pub invited_by        : String
 }
 
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 async fn view_invitations(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -168,6 +172,7 @@ pub struct Invitation{
     pub invited_by        : String
 }
 
+#[tracing::instrument(skip(db, cookie, invitation_id), err(Debug))]
 async fn view_invitation(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -208,6 +213,7 @@ async fn view_invitation(
     Ok(Json(row))
 }
 
+#[tracing::instrument(skip(db, cookie, invitation_id), err(Debug))]
 async fn accept_invitation(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -236,6 +242,7 @@ async fn accept_invitation(
     }))
 }
 
+#[tracing::instrument(skip(db, cookie, invitation_id), err(Debug))]
 async fn reject_invitation(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,

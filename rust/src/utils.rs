@@ -307,7 +307,7 @@ pub fn get_user_id_for_payment(cookie: &Cookies) -> Result<Uuid, ApiError> {
     Ok(token_data.claims.user_id)
 }
 
-#[derive(aide::OperationIo)]
+#[derive(Debug, aide::OperationIo)]
 #[aide(output)]
 pub enum ApiError {
     Unauthorized,

@@ -141,7 +141,7 @@ async fn rate_limiter(
 
     let trx = vk_client.multi();
 
-    let _: i64 = trx.incr(&key)
+    let _: () = trx.incr(&key)
     .await
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
     

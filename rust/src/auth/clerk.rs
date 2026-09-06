@@ -6,6 +6,7 @@ use serde::Deserialize;
 use tower_cookies::{Cookie, Cookies};
 use aide::axum::ApiRouter;
 use axum::routing::post;
+use tracing;
 
 
 pub fn auth_routes() -> ApiRouter {
@@ -35,6 +36,7 @@ pub struct ClerkClaims {
     sts: Option<String>,
 }
 
+#[tracing::instrument(skip(db, cookie, payload), err(Debug))]
 pub async fn clerk_callback(
     Extension(db) : Extension<DatabaseDriver>,
     cookie      : Cookies,

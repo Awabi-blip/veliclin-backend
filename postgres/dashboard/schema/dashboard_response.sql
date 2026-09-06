@@ -1,4 +1,10 @@
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 select * from profiles;
+
+SET myapp.user_id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923'
+
+select * from return_dashboard_response(
+);
 
 create or replace function return_dashboard_response (
 ) 
@@ -8,7 +14,7 @@ as $$
 declare
     v_staff_id                     uuid := current_setting('myapp.user_id')::UUID;
 
-    v_clinic_id                    uuid := (select clinic from staffs_in_clinics
+    v_clinic_id                    uuid := (select clinic_id from staffs_in_clinics
                                         where staff_id = v_staff_id);
 
     v_upcoming_appointments_rec    jsonb;
@@ -35,7 +41,7 @@ begin
         from     patients_in_clinics as pic
         join     appointments        as app
         on       app.patient_id      =  pic.patient_id
-        where    app.status          =  upcoming
+        where    app.status          =  'Scheduled'::e_appointment_status
         and      app.clinic_id       =  v_clinic_id
         order by scheduled_at        asc
         limit 5
@@ -65,7 +71,7 @@ begin
     into     v_staff_rec
     from  (
         select   concat(prf.first_name, ' ', prf.last_name) as staff_name,
-                 sic.role                                   as staff_role
+                 sic.staff_role                             as staff_role
         from     staffs_in_clinics as sic
         join     profiles          as prf
         on       sic.staff_id       =  prf.id

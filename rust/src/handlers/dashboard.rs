@@ -49,10 +49,22 @@ pub async fn load_dashboard(
     let cached_response: Option<String> =
      vk.get(&key)
     .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .map_err(|e| ApiError::InternalServerError(
+        format!("dashboard redis GET: {}", e)
+    ))?;
 
-    if cached_response.is_none(){
-        let result: serde_json::Value = sqlx::query_scalar!(
+    if let Some(cached_response) = cached_response {
+
+        let cached_response: serde_json::Value = serde_json::from_str(&cached_response)
+        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    
+       return  Ok(Json(DashboardResponse {
+        dashboard_response: cached_response
+        }))
+
+    }
+
+    let result: serde_json::Value = sqlx::query_scalar!(
         r#"
         SELECT * FROM return_dashboard_response() AS "return_dashboard_response!"
         "#
@@ -63,23 +75,14 @@ pub async fn load_dashboard(
 
     vk.set::<(), _, _>(&key, result.to_string(), Some(Expiration::EX(300)), None, false)
     .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
-    return Ok(Json(DashboardResponse {
-            dashboard_response: result
-        }))
-    }
-
-    let cached_response = cached_response
-    .ok_or_else(|| ApiError::InternalServerError("Cached response missing".to_string()))?;
-
-    let cached_response: serde_json::Value = serde_json::from_str(&cached_response)
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .map_err(|e| ApiError::InternalServerError(
+        format!("dashboard redis SET: {}", e)
+        ))?;
 
 
-    Ok(Json(DashboardResponse {
-        dashboard_response: cached_response
-    }))
+     Ok(Json(DashboardResponse {
+                dashboard_response: result
+            }))
 
 
 }
