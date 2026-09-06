@@ -10,7 +10,6 @@ use jsonwebtoken::{decode, EncodingKey, DecodingKey, Validation, Algorithm, enco
 use chrono::{Utc};
 use schemars::JsonSchema;
 use std::sync::OnceLock;
-use dotenvy::dotenv;
 use resend_rs::Resend;
 use std::time::{SystemTime, UNIX_EPOCH};
 use time::Duration;
@@ -19,6 +18,7 @@ use time::Duration;
 pub struct SessionClaims{
     pub user_id : uuid::Uuid,
     pub user_role : StaffRole,
+    pub clinic_id : uuid::Uuid,
     pub owner : bool,
     pub exp : u64
 }
@@ -35,6 +35,7 @@ pub struct PaymentClaims{
 pub struct User{
    pub user_id : uuid::Uuid,
    pub user_role : StaffRole,
+   pub clinic_id    : uuid::Uuid,
    pub owner     : bool
 }
 
@@ -233,6 +234,7 @@ pub fn get_user(cookies: &Cookies) -> Result<User, ApiError> {
 
     let user = User {
         user_id  : token_data.claims.user_id,
+        clinic_id : token_data.claims.clinic_id,
         user_role: token_data.claims.user_role,
         owner    : token_data.claims.owner
     };
@@ -349,6 +351,7 @@ pub enum AuthResponse {
     Session {
         id: uuid::Uuid,
         staff_role: StaffRole,
+        clinic_id: uuid::Uuid,
         owner: bool,
         expires_at : chrono::DateTime<Utc>
     },
@@ -420,7 +423,7 @@ pub fn match_auth(
         redirect_page = String::from("/profile_build");
     }
 
-    AuthResponse::Session { id, staff_role, owner, expires_at } => {
+    AuthResponse::Session { id, staff_role, clinic_id, owner, expires_at } => {
         let now = chrono::Utc::now();
         let duration: u64;
         
@@ -445,6 +448,7 @@ pub fn match_auth(
             &SessionClaims {
                 user_id: id,
                 user_role: staff_role,
+                clinic_id : clinic_id,
                 owner: owner,
                 exp: expiry,
             },

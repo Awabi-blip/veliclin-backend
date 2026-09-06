@@ -14,6 +14,8 @@ CALL create_new_clinic(
 SELECT current_setting('myapp.user_id');
 DROP PROCEDURE create_new_clinic;
 
+set role postgres;
+
 CREATE OR REPLACE FUNCTION create_new_clinic(
     p_clinic_name VARCHAR(100),
     p_clinic_type e_clinic_type,

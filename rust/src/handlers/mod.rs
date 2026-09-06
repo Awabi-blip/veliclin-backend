@@ -11,3 +11,5 @@ pub mod doctors_schedule;
 pub mod appointments;
 
 pub mod prescriptions;
+
+pub mod dashboard;

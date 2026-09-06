@@ -15,9 +15,6 @@ use database::db_driver::DatabaseDriver;
 use axum::{Extension, Router, extract::Request, extract::State,
 middleware::{self,Next}, response::Response, Json};
 use crate::utils::{ApiError};
-use std::env;
-use jsonwebtoken::{Algorithm, EncodingKey, DecodingKey, Validation};
-use tracing::{error, info};
 use aide::{
     axum::{ApiRouter, IntoApiResponse},
     openapi::OpenApi,
@@ -28,6 +25,7 @@ use aide::axum::routing::get;
 
 use crate::handlers::appointments::appointment_routes;
 use crate::handlers::build_profile::profile_routes;
+use crate::handlers::dashboard::dashboard_routes;
 use crate::handlers::clinics::clinics_routes;
 use crate::handlers::doctors_schedule::doctor_schedule_routes;
 use crate::handlers::patients::patient_routes;
@@ -71,6 +69,7 @@ async fn main() {
     .merge(auth_routes())
     .merge(profile_routes())
     .merge(clinics_routes().with_state(vk_client.clone()))  // supply Client state right here
+    .merge(dashboard_routes().with_state(vk_client.clone()))
     .merge(staff_invitation_routes())
     .merge(appointment_routes())
     .merge(doctor_schedule_routes()) 

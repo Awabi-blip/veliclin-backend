@@ -50,7 +50,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 select * from profiles;
-
 select * from determine_auth_response('01a03e8a-e7fc-7a52-b510-a7dc3b784923'::UUID)
 
 CREATE OR REPLACE FUNCTION determine_auth_response(
@@ -60,6 +59,7 @@ DECLARE
 v_staff_role e_staff_role;
 v_onboarded BOOL;
 v_expires_at TIMESTAMPTZ; 
+v_clinic_id UUID;
 response jsonb;
 BEGIN
 
@@ -86,31 +86,40 @@ BEGIN
 
         IF FOUND THEN
             -- check if they are owner and staff
-            SELECT expires_at INTO v_expires_at  
+            SELECT clinic_id, expires_at 
+            INTO v_clinic_id, v_expires_at  
             FROM clinics  
             WHERE owner_id = f_user_id;
             
             -- if owner + staff then 
             IF FOUND THEN 
-                response := jsonb_build_object('id', f_user_id, 'staff_role', v_staff_role,
+                response := jsonb_build_object('id', f_user_id, 'staff_role', v_staff_role, 'clinic_id', v_clinic_id,
                 'cookie', 'Session', 'owner', true, 'expires_at', v_expires_at);
             --if only a staff member
             ELSE 
-                SELECT expires_at INTO v_expires_at
-                FROM clinics WHERE clinic_id = (SELECT clinic_id FROM
-                staffs_in_clinics WHERE staff_id = v_user_id);
+            
+                SELECT clinic_id
+                INTO v_clinic_id 
+                FROM staffs_in_clinics 
+                WHERE staff_id = v_user_id;
+                
+                SELECT expires_at 
+                INTO v_expires_at
+                FROM clinics
+                WHERE clinic_id;
 
-                response := jsonb_build_object('id', f_user_id, 'staff_role', v_staff_role,
+                response := jsonb_build_object('id', f_user_id, 'staff_role', v_staff_role,'clinic_id', v_clinic_id,
                 'cookie', 'Session', 'owner', false, 'expires_at', v_expires_at );
             END IF;
         ELSE 
             -- check if only owner
-            SELECT expires_at INTO v_expires_at
+            SELECT clinic_id, expires_at 
+            INTO v_clinic_id, v_expires_at
             FROM clinics
             WHERE owner_id = f_user_id;
             
             IF FOUND THEN
-                response := jsonb_build_object('id', f_user_id, 'staff_role', 'Owner'::e_staff_role,
+                response := jsonb_build_object('id', f_user_id, 'staff_role', 'Owner'::e_staff_role,'clinic_id', v_clinic_id,
                 'cookie', 'Session', 'owner', true, 'expires_at', v_expires_at);
             -- if not found in a clinic as staff or as a clinic owner
             -- then AND have profile

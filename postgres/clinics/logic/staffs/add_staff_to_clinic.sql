@@ -3,6 +3,8 @@
 --then let them send inviations to people, upon invitation accept/reject invitation
 --if its accepted, then insert them as a staff, based on their id
 
+select * from profiles;
+select * from app_users;
 
 CALL send_invitations(
 'ayesha@gmail.com',

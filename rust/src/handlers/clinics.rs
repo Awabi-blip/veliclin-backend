@@ -16,7 +16,7 @@ use aide::NoApi;
 use schemars::JsonSchema;
 use serde::Serialize;
 use aide::axum::ApiRouter;
-use aide::axum::routing::post;
+use aide::axum::routing::{get, post};
 use chrono_tz::Tz;
 use resend_rs::types::{CreateEmailBaseOptions};
 
@@ -24,6 +24,7 @@ use resend_rs::types::{CreateEmailBaseOptions};
 pub fn clinics_routes() -> ApiRouter<Client>{
     ApiRouter::new()
         .api_route("/clinics", post(create_clinic))
+        .api_route("/clinics/{clinic_id}", get(view_clinic))
         .api_route("/clinics/deletion/request", post(create_otp_delete_clinic))
         .api_route("/clinics/deletion/confirm", post(enter_otp_delete_clinic))
 }
@@ -160,8 +161,8 @@ pub enum ClinicResponse {
 pub async fn view_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
-    Path(clinic_id)              : Path<uuid::Uuid>
-) ->  Result<ClinicResponse, ApiError> {
+    Path(clinic_id)        : Path<uuid::Uuid>
+) ->  Result<Json<ClinicResponse>, ApiError>{
 
     let auth = get_user(&cookie)
     .map_err(|_| ApiError::Unauthorized)?;
@@ -206,7 +207,7 @@ pub async fn view_clinic(
             .await
             .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-            Ok(ClinicResponse::Manager(rows))
+            Ok(Json(ClinicResponse::Manager(rows)))
         }
 
         User {
@@ -233,7 +234,7 @@ pub async fn view_clinic(
             .await
             .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-            Ok(ClinicResponse::Staff(rows))
+            Ok(Json(ClinicResponse::Staff(rows)))
         }
 
 }

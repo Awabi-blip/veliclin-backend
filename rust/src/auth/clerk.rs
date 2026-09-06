@@ -1,13 +1,9 @@
 use crate::database::db_driver::DatabaseDriver;
 use crate::utils::{get_permenant_app_data, AuthResponse, match_auth};
 use axum::{Extension, Json, response::Redirect,};
-use jsonwebtoken::{decode, encode, Header};
+use jsonwebtoken::{decode};
 use serde::Deserialize;
-use std::time::{SystemTime, UNIX_EPOCH};
-use time::Duration;
 use tower_cookies::{Cookie, Cookies};
-use tower_cookies::cookie::SameSite;
-use chrono::{Utc};
 use aide::axum::ApiRouter;
 use axum::routing::post;
 
