@@ -59,6 +59,7 @@ pub struct ClinicInformation{
     pub timezone       : Tz
 }
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn create_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -158,6 +159,8 @@ pub enum ClinicResponse {
     Staff(ViewClinicInformationStaff)
 }
 
+
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn view_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -247,6 +250,7 @@ pub struct ConfirmationAnalysis {
     // pub owner_id : uuid::Uuid
 }
 
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 async fn create_otp_delete_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -328,11 +332,13 @@ pub struct OtpClinicDeletion {
     pub otp : String
 }
 
+
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn enter_otp_delete_clinic(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
     State(vk)            : State<Client>,
-    Json(body): Json<OtpClinicDeletion>,
+    body: Json<OtpClinicDeletion>,
 
     ) ->  Result<Json<SuccessResponse>, ApiError> {
 

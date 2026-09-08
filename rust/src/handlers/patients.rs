@@ -56,6 +56,7 @@ pub struct PatientInformation {
 
 }
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 async fn add_patients(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -119,6 +120,8 @@ pub struct UpdatePatients {
     pub gender     : Option<String>
 }
 
+
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 async fn update_patients(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -190,6 +193,8 @@ pub struct PatientSensitiveInformation{
     pub note       : Option<String>,
 }
 
+
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 async fn add_patients_information (
     Extension(db): Extension<DatabaseDriver>,
         NoApi(cookie)       : NoApi<Cookies>,
@@ -239,6 +244,7 @@ async fn add_patients_information (
 }
 
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 async fn update_patients_information(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -342,6 +348,7 @@ pub enum PatientResponse {
     Staff(Option<QuickReturnPatient>)
 }
 
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 async fn view_patients(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -483,7 +490,7 @@ async fn view_patient(
 }
 
 
-
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 async fn delete_patients(
     Extension(db): Extension<DatabaseDriver>,
         NoApi(cookie)       : NoApi<Cookies>,

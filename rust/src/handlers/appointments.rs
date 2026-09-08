@@ -54,7 +54,7 @@ pub struct AppoinmentInformation {
 }
 
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(db, cookies, body), err(Debug))]
 pub async fn create_appointment(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies): NoApi<Cookies>,
@@ -107,7 +107,7 @@ pub struct UpdateAppointmentInformation {
     pub meeting_link    : Option<String>
 }
 
-
+#[tracing::instrument(skip(db, cookies, body), err(Debug))]
 pub async fn reschedule_appointment(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies)      : NoApi<Cookies>,
@@ -193,6 +193,7 @@ pub struct AppointmentFilter {
     pub status: AppointmentStatus,
 }
 
+#[tracing::instrument(skip(db, cookies, filter), err(Debug))]
 pub async fn view_appointments(
     Extension(db)   : Extension<DatabaseDriver>,
     NoApi(cookies)         : NoApi<Cookies>,
@@ -268,6 +269,7 @@ pub async fn view_appointments(
 }
 
 
+#[tracing::instrument(skip(db, cookies, appointment_id), err(Debug))]
 pub async fn start_appointment(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies)               : NoApi<Cookies>,
@@ -321,7 +323,7 @@ pub struct AppointmentData {
     pub fee                 : rust_decimal::Decimal
 }
 
-
+#[tracing::instrument(skip(db, cookies, body), err(Debug))]
 pub async fn add_data_to_appointments(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies)               : NoApi<Cookies>,
@@ -368,6 +370,7 @@ pub struct UpdateAppointmentData {
     pub fee                 : Option<rust_decimal::Decimal>
 }
 
+#[tracing::instrument(skip(db, cookies, body), err(Debug))]
 pub async fn update_data_to_appointments(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies)      : NoApi<Cookies>,
@@ -413,6 +416,7 @@ pub async fn update_data_to_appointments(
 }
 
 
+#[tracing::instrument(skip(db, cookies), err(Debug))]
 pub async fn delete_appointments(
     Extension(db) : Extension<DatabaseDriver>,
     NoApi(cookies)                : NoApi<Cookies>,

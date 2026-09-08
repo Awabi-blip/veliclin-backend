@@ -6,7 +6,7 @@ use axum::{
 
 use aide::NoApi;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use validator::Validate; // Import the trait
 use chrono::{NaiveDate, Utc, Datelike}; // Import the plain date type
 use crate::database::db_driver::DatabaseDriver;
@@ -36,6 +36,7 @@ pub struct BuildProfile {
     pub gender: Gender
 }
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn build_profile(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie) : NoApi<Cookies>,    

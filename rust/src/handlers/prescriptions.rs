@@ -51,6 +51,8 @@ pub struct AddPrescriptionRequest {
     pub metadata        : Option<Value>,
 }
 
+
+#[tracing::instrument(skip(db, cookie, info), err(Debug))]
 pub async fn add_prescription (
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -120,6 +122,7 @@ pub enum PrescriptionStatus {
     Completed
 }
 
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn view_prescriptions(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -201,6 +204,8 @@ pub struct UpdatePrescription {
     pub meta_data:  Option<Value>,
 }
 
+
+#[tracing::instrument(skip(db, cookie, info), err(Debug))]
 pub async fn update_prescription(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,

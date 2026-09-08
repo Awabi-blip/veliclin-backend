@@ -37,6 +37,8 @@ pub struct ScheduleInformation {
     pub time_shift_ends   : NaiveTime,
 }
 
+
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn add_doctor_schedule(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -88,6 +90,8 @@ pub struct ReturnDoctorSchedule {
     pub day_shift_ends: WorkingDays,
 }
 
+
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn view_doctors_schedule(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
@@ -131,6 +135,7 @@ pub struct DeleteSchedule {
     pub delete_appointments : bool
 }
 
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
 pub async fn delete_doctors_schedule(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,

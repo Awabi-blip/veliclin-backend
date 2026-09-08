@@ -27,6 +27,8 @@ pub struct DashboardResponse {
 
 // create a function
 // takes 
+
+#[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn load_dashboard(
     Extension(db) : Extension<DatabaseDriver>,
     NoApi(cookie) : NoApi<Cookies>,    
