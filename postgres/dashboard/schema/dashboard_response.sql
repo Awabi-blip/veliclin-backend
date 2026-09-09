@@ -1,6 +1,9 @@
 -- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 select * from profiles;
 
+
+select * from staffs_in_clinics where staff_id = '01a08493-22e5-7800-b28b-49fd98035d05'
+
 SET myapp.user_id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923'
 
 select * from return_dashboard_response(
@@ -14,8 +17,7 @@ as $$
 declare
     v_staff_id                     uuid := current_setting('myapp.user_id')::UUID;
 
-    v_clinic_id                    uuid := (select clinic_id from staffs_in_clinics
-                                        where staff_id = v_staff_id);
+    v_clinic_id                    uuid;
 
     v_upcoming_appointments_rec    jsonb;
     v_upcoming_appointments_count  integer;
@@ -30,10 +32,25 @@ declare
     
 begin
 
-    if v_staff_id is null or v_clinic_id is null
+    if v_staff_id is null
         then raise exception 'Unauthorised';
     end if;
 
+    select clinic_id into v_clinic_id
+    from  staffs_in_clinics 
+    where staff_id  = v_staff_id
+    and   is_active = true;
+
+    if v_clinic_id is null then
+        select clinic_id into v_clinic_id from clinics
+        where owner_id = v_staff_id;
+    end if;
+
+    if v_clinic_id is null 
+        then raise exception 'unauthorized';
+    end if;
+
+    
     select   coalesce (jsonb_agg(to_jsonb(x)), '[]'::jsonb)
     into     v_upcoming_appointments_rec
     from (

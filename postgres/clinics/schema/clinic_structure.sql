@@ -178,7 +178,7 @@ select
     pic.patient_id        as patient_id,
     concat(pic.first_name, ' ', 
     pic.last_name)        as full_name,
-    pic.phone_number      as phone_number,
+    pic.contact_number      as phone_number,
     pic.email             as email,
     pic.gender            as gender,
     pin.neurotype         as neurotype,
@@ -190,6 +190,9 @@ from patients_in_clinics  as pic
 join patients_information as pin
 on   pic.patient_id       = pin.patient_id;
 
+drop view view_patients_as_doctors;
+
+
 
 create view view_patients_as_staff
 with (security_invoker = true) as
@@ -197,14 +200,13 @@ select
     pic.patient_id        as patient_id,
     concat(pic.first_name, ' ', 
     pic.last_name)        as full_name,
-    pic.phone_number      as phone_number,
+    pic.contact_number      as phone_number,
     pic.email             as email,
     pic.gender            as gender
-from patients_in_clinics  as pic
-join patients_information as pin
-on   pic.patient_id       = pin.patient_id;
+from patients_in_clinics  as pic;
 
-
+drop view view_patients_as_staff;
+set role postgres;
 
 ALTER TABLE patients_in_clinics
 ADD COLUMN "adder_role" e_staff_role NOT NULL CHECK ("adder_role" = 'Doctor'::e_staff_role),

@@ -401,7 +401,7 @@ async fn view_patients(
             SELECT patient_id   as "patient_id!",
                    full_name    as "full_name!",
                    phone_number as "phone_number!",
-                   email        as "email!",
+                   email        as "email",
                    gender       as "gender!: Gender"
             FROM view_patients_as_staff
             "#
@@ -472,7 +472,7 @@ async fn view_patient(
                 SELECT patient_id  as "patient_id!",
                     full_name      as "full_name!",
                     phone_number   as "phone_number!",
-                    email          as "email!",
+                    email          as "email",
                     gender         as "gender!: Gender"
                 FROM view_patients_as_staff
                 WHERE patient_id = $1

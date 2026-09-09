@@ -5,6 +5,17 @@ select * from profiles;
 
 set myapp.user_id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923'
 
+select * from view_patients_as_staff
+
+select * from patients_in_clinics;
+
+select * from clinics where clinic_id = '01a06173-6dbf-7314-937e-1386bc4fe707';
+
+set role app;
+
+set role postgres;
+
+
 
 call add_patients_to_clinics(
 '01a07759-3b0e-7c2a-980d-fe8ee75586d3'::UUID,
@@ -75,3 +86,5 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+select * from patients_in_clinics;
