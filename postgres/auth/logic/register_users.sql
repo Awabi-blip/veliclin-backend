@@ -101,12 +101,12 @@ BEGIN
                 SELECT clinic_id
                 INTO v_clinic_id 
                 FROM staffs_in_clinics 
-                WHERE staff_id = v_user_id;
+                WHERE staff_id = f_user_id;
                 
                 SELECT expires_at 
                 INTO v_expires_at
                 FROM clinics
-                WHERE clinic_id;
+                WHERE clinic_id = v_clinic_id;
 
                 response := jsonb_build_object('id', f_user_id, 'staff_role', v_staff_role,'clinic_id', v_clinic_id,
                 'cookie', 'Session', 'owner', false, 'expires_at', v_expires_at );

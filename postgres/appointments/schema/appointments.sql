@@ -1,6 +1,7 @@
 CREATE TYPE e_appointment_status AS ENUM ('Scheduled', 'Completed', 'Cancelled', 'On_going');
 
 
+
 CREATE TABLE IF NOT EXISTS appointments (
     "appointment_id"     BIGSERIAL,
     "doctor_id"          UUID NOT NULL,
@@ -46,6 +47,9 @@ select * from view_appointments_as_staffs
 
 SET myapp.user_id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923';
 
+
+
+select * from app_users;
 
 CREATE VIEW view_appointments_as_doctors
 with (security_invoker = true) AS

@@ -43,6 +43,20 @@ pub async fn clerk_callback(
     Json(payload) : Json<AuthPayload>,
 ) -> Result<Redirect, Redirect> {
 
+    for name in [
+        "SessionCookie",
+        "PaymentCookie",
+        "InvitationCookie",
+        "ProfileBuildCookie",
+        "GeneralLoginCookie",
+    ] {
+        cookie.remove(
+            Cookie::build(name)
+                .path("/")
+                .build()
+        );
+    }
+
     let app_data = get_permenant_app_data();
 
     let token_data = decode::<ClerkClaims>(
@@ -98,10 +112,6 @@ pub async fn clerk_callback(
     })?;
 
     
-    cookie.list().into_iter().for_each(|c| {
-    cookie.remove(Cookie::build(c.name().to_string()).path("/").build())
-        });
-
     let redirect_page = match_auth(auth, &cookie)
     .map_err(|_| Redirect::to("/login?error=internal_error"))?;
 

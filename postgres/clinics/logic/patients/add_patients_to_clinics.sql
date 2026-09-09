@@ -1,6 +1,19 @@
 
 set role postgres;
 
+select * from profiles;
+
+set myapp.user_id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923'
+
+
+call add_patients_to_clinics(
+'01a07759-3b0e-7c2a-980d-fe8ee75586d3'::UUID,
+'Trouble',
+'Shooting Star',
+'+923304190699',
+'Male'::e_gender
+)
+
 CREATE OR REPLACE PROCEDURE add_patients_to_clinics(    
     p_doctor_id     UUID ,
     p_first_name    VARCHAR(40),

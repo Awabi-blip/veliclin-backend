@@ -90,7 +90,7 @@ async fn add_patients(
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
     sqlx::query!(
-    "CALL add_patients_to_clinics($1, $2, $3, $4, $5, $6)",
+    "CALL add_patients_to_clinics($1, $2, $3, $4, $5, $6::citext)",
     doctor_id, body.first_name, body.last_name, body.number,
     body.gender as Gender, body.email
     )
