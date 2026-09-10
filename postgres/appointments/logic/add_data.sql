@@ -21,6 +21,7 @@ declare
     v_valid_patient_id      UUID;
     v_appointment_status    e_appointment_status;
 begin
+    
     if v_valid_clinic_id is null then
         raise exception 'unauthorised';
     end if;
@@ -33,7 +34,9 @@ begin
           and  status in ('On_going'::e_appointment_status, 'Completed'::e_appointment_status);
 
     if v_valid_patient_id is null then
-     raise exception 'appointment not found, not yours, or has not been started';
+     raise exception using
+     errcode = 'P2001',
+     message = 'appointment not found, not yours, or has not been started';
     end if;
 
     if not exists (
@@ -59,7 +62,9 @@ begin
         status    = v_appointment_status;
 
     if not found
-        then raise exception 'could not update';
+        then raise exception using
+        errcode = 'P2001',
+        message = 'could not update';
     end if;
 
 end;

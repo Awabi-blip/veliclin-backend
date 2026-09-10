@@ -43,9 +43,7 @@ pub async fn build_profile(
     body : Json<BuildProfile>
 ) -> Result<Redirect, ApiError> {
     
-    let user_id = get_user_id_for_profile_build(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
-
+    let user_id = get_user_id_for_profile_build(&cookie)?;
     let today = Utc::now().date_naive();
     let eighteen_years_ago = today.with_year(today.year() - 18).unwrap();
 
@@ -65,12 +63,10 @@ pub async fn build_profile(
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let sqlx::types::Json(auth): sqlx::types::Json<AuthResponse> =
     sqlx::query_scalar!(
@@ -85,15 +81,13 @@ pub async fn build_profile(
         body.date_of_birth as _
     )
     .fetch_one(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     cookie.remove(
         Cookie::build("ProfileBuildCookie")
         .path("/")
         .build()
     );
-
 
     let redirect_page = match_auth(auth, &cookie)?;
 

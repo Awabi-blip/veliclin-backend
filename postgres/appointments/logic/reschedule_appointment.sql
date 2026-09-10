@@ -1,4 +1,4 @@
--- Active: 1778842009804@@127.0.0.1@5432@cliniqo
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 create or replace procedure reschedule_appointment(
     p_appointment_id bigint,
     p_scheduled_at   timestamptz,
@@ -16,8 +16,8 @@ declare
               'Doctor'::e_staff_role,
               'Manager'::e_staff_role,
               'Receptionist'::e_staff_role
+          and is_active = true
           )
-         and is_active = true;
     );
 
     v_schedule_id            bigint;
@@ -36,7 +36,9 @@ declare
 begin
 
     if v_valid_clinic_id is null then
-        raise exception 'unauthorised';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'unauthorised';
     end if; -- BUG: missing end if
 
     --schema enforces, that doctor_id and clinic_id in appointments
@@ -51,11 +53,15 @@ begin
       and  clinic_id      = v_valid_clinic_id;
 
     if not found then
-        raise exception 'appointment not found';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'appointment either does not exist, or if it does, it is not for the doctor you are trying to update it for';
     end if;
 
     if p_duration_hours not in (0.5, 1, 1.5, 2) then
-        raise exception 'invalid duration: must be 0.5, 1, 1.5, or 2 hours';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'invalid duration: must be 0.5, 1, 1.5, or 2 hours';
     end if;
 
     -- perform pg_advisory_xact_lock(
@@ -100,8 +106,10 @@ begin
            meeting_link   = coalesce(p_meeting_link, meeting_link)
     where  appointment_id = p_appointment_id;
 
-    if not found
-        then raise exception 'appointment not found';
+    if not found then
+        raise exception using 
+        errcode = 'P2001',
+        message = 'could not update appointment, either it does not exist, or time overlaps';
     end if;
 
 end;

@@ -22,7 +22,9 @@ declare
 begin
 
     if v_valid_clinic_id is null then
-        raise exception 'unauthorised';
+        raise exception using 
+        errcode = 'P2001',
+        message =  'unauthorised';
     end if;
 
     -- this would only map the correct doctor
@@ -45,9 +47,11 @@ begin
         where  doctor_schedule_id = p_schedule_id
         and    clinic_id   = v_clinic_id;
 
-        if not found then raise exception
-            'the doctor does not belong to your clinic,
-             or schedule id was not found';
+        if not found then 
+        raise exception using 
+        errcode = 'P2001',
+        message = 'the doctor does not belong to your clinic,
+                   or schedule id was not found';
         end if;
 
 
@@ -59,9 +63,11 @@ begin
         where  schedule_id  = p_schedule_id
         and    clinic_id    = v_valid_clinic_id;
 
-        if not found then raise exception
-            'the doctor does not belong to your clinic,
-             or schedule id was not found';
+        if not found then 
+        raise exception using 
+        errcode = 'P2001',
+        message = 'the doctor does not belong to your clinic,
+                   or schedule id was not found';
         end if;
         
         -- select day_shift_starts, day_shift_ends, time_shift_starts, time_shift_ends

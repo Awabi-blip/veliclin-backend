@@ -70,16 +70,13 @@ pub async fn create_appointment(
         return Err(ApiError::BadRequest("The hours must be in (0.5, 1, 1.5, 2) hours".to_string()))
     }
 
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookies)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL add_appointments($1, $2, $3, $4, $5)",
@@ -89,8 +86,8 @@ pub async fn create_appointment(
         body.duration_hours,
         body.meeting_link
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
     
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -125,16 +122,13 @@ pub async fn reschedule_appointment(
         return Err(ApiError::BadRequest("The hours must be in (0.5, 1, 1.5, 2) hours".to_string()))
     }
 
-    let user = get_user(&cookies)
-        .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookies)?;
 
     let mut conn = db.pool.acquire()
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL reschedule_appointment($1, $2, $3, $4)",
@@ -143,8 +137,7 @@ pub async fn reschedule_appointment(
         body.duration_hours,
         body.meeting_link
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -201,9 +194,7 @@ pub async fn view_appointments(
 
 ) -> Result<Json<AppointmentsResponse>, ApiError> {
     
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::Unauthorized)?;
-
+    let user = get_user(&cookies)?;
 
     if !matches!(user.user_role, StaffRole::Doctor | StaffRole::Manager 
         | StaffRole::Receptionist) {
@@ -211,12 +202,10 @@ pub async fn view_appointments(
     };
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     match user.user_role {
         StaffRole::Doctor => {
@@ -235,8 +224,7 @@ pub async fn view_appointments(
             status = $1::e_appointment_status"#, 
         filter.status as AppointmentStatus
         ).fetch_all(&mut *conn)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .await?;
         
         Ok(Json(AppointmentsResponse::Doctor(p)))
     
@@ -256,8 +244,8 @@ pub async fn view_appointments(
                 status = $1::e_appointment_status"#,
             filter.status as AppointmentStatus
             ).fetch_all(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
+
             
             Ok(Json(AppointmentsResponse::Staff(p)))
         }
@@ -278,21 +266,17 @@ pub async fn start_appointment(
 
 ) -> Result<Json<SuccessResponse>, ApiError> {
     
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::NotFound("User not found".to_string()))?;
+    let user = get_user(&cookies)?;
 
     if !matches!(user.user_role, StaffRole::Manager | StaffRole::Doctor) {
         return Err(ApiError::Unauthorized);
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-   
+    .await?;
    
     sqlx::query!(
         r#"UPDATE appointments
@@ -300,8 +284,7 @@ pub async fn start_appointment(
         WHERE appointment_id = $1
         "#, appointment_id
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -333,23 +316,19 @@ pub async fn add_data_to_appointments(
     body.validate()
     .map_err(|e| ApiError::BadRequest(e.to_string()))?;
 
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookies)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL add_data_to_appointment($1, $2, $3, $4)",
         body.appointment_id, body.note, body.diagnosis, body.fee
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
     
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -388,27 +367,23 @@ pub async fn update_data_to_appointments(
     return Err(ApiError::BadRequest("nothing to update".to_string()));
     }
 
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::Unauthorized)?;
-
+    let user = get_user(&cookies)?;
+    
     if user.user_role != Doctor {
         return Err(ApiError::Unauthorized)
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL add_data_to_appointment($1, $2, $3, $4)",
         appointment_id, body.note, body.diagnosis, body.fee
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
     
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -423,16 +398,13 @@ pub async fn delete_appointments(
     Path(appointment_id)     : Path<i64>,
 ) -> Result <Json<SuccessResponse>, ApiError> {
     
-    let user = get_user(&cookies)
-    .map_err(|_| ApiError::NotFound("user not found".to_string()))?;
+    let user = get_user(&cookies)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         r#"UPDATE appointments
@@ -440,8 +412,7 @@ pub async fn delete_appointments(
         WHERE appointment_id = $1"#,
         appointment_id
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

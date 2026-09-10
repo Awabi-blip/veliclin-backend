@@ -45,20 +45,17 @@ pub async fn add_doctor_schedule(
     body : Json<ScheduleInformation>
 ) -> Result<Json<SuccessResponse>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if !matches!(user.user_role, StaffRole::Manager | StaffRole::Doctor) {
         return Err(ApiError::Unauthorized)
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL insert_doctors_schedule($1, $2::e_working_days, $3, $4)",
@@ -67,8 +64,7 @@ pub async fn add_doctor_schedule(
         body.time_shift_starts,
         body.time_shift_ends
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -98,16 +94,13 @@ pub async fn view_doctors_schedule(
     Path(doctor_id)              : Path<uuid::Uuid>
 ) -> Result<Json<Vec<ReturnDoctorSchedule>>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::NotFound("You were not found in our database".to_string()))?;
+    let user = get_user(&cookie)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let rows = sqlx::query_as!(
         ReturnDoctorSchedule,
@@ -122,8 +115,7 @@ pub async fn view_doctors_schedule(
         WHERE doctor_id = $1"#, 
         doctor_id
     ).fetch_all(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(rows))
 }
@@ -142,27 +134,23 @@ pub async fn delete_doctors_schedule(
     body : Json<DeleteSchedule>
 ) -> Result<Json<SuccessResponse>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if !matches!(user.user_role, StaffRole::Manager | StaffRole::Doctor) {
         return Err(ApiError::Unauthorized)
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
-    "CALL delete_doctor_schedule($1, $2)", 
-    body.schedule_id, body.delete_appointments
+        "CALL delete_doctor_schedule($1, $2)", 
+        body.schedule_id, body.delete_appointments
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

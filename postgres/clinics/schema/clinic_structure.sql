@@ -186,12 +186,20 @@ select
     pin.height_cm         as height_cm,
     pin.weight_kg         as weight_kg,
     pin.note              as note
-from patients_in_clinics  as pic
-join patients_information as pin
+from      patients_in_clinics  as pic
+left join patients_information as pin
 on   pic.patient_id       = pin.patient_id;
 
-drop view view_patients_as_doctors;
 
+select * from profiles;
+
+set role postgres;
+set role app;
+set myapp.user_id = '01a08493-22e5-7800-b28b-49fd98035d05';
+
+select * from profiles join staffs_in_clinics on profiles.id = staffs_in_clinics.staff_id
+
+select * from view_patients_as_doctors;
 
 
 create view view_patients_as_staff

@@ -1,4 +1,4 @@
--- Active: 1778842009804@@127.0.0.1@5432@cliniqo@public
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 --refactor this to have schedule id
 --that schedule id, will be linked to appointments
 --upon deletion of schedule, it will be a soft delete
@@ -69,15 +69,21 @@ begin
     timezone                is null or v_appointment_start_time is null or 
     v_appointment_end_time  is null
     then
-        raise exception 'unauthorised';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'unauthorised';
     end if;
 
     if v_valid_doctor_clinic_id != v_valid_clinic_id then
-        raise exception 'clinic ids dont match'; -- BUG: missing semicolon in original
+        raise exception using 
+        errcode = 'P2001', 
+        message = 'clinic ids dont match'; -- BUG: missing semicolon in original
     end if;
 
     if p_duration_hours not in (0.5, 1, 1.5, 2) then
-        raise exception 'invalid duration: must be 0.5, 1, 1.5, or 2 hours';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'invalid duration: must be 0.5, 1, 1.5, or 2 hours';
     end if;
 
     -- perform pg_advisory_xact_lock(
@@ -118,7 +124,9 @@ begin
 
 
     if not found then
-      raise exception 'appointment falls outside the doctor''s available schedule';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'appointment falls outside the doctor''s available schedule';
     end if;
 
     insert into appointments (

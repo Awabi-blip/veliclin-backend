@@ -34,17 +34,21 @@ DECLARE
 BEGIN
 
 
-    if v_valid_clinic_id is null 
+    if (v_valid_clinic_id) is null 
     or 
-    v_valid_doctor_clinic_id is null 
-        then raise exception 'unauthorised/doctor not found';
+    (v_valid_doctor_clinic_id is null) then
+        raise exception using 
+        errcode = 'P2001',
+        message =  'unauthorised/doctor not found';
     end if;
 
     if v_valid_doctor_clinic_id != v_valid_clinic_id then
-        raise exception 'the doctor id does not exist'; 
+        raise exception using 
+        errcode = 'P2001',
+        message = 'the doctor does not belong to yer clinic'; 
     end if;
 
-    select pg_advisory_xact_lock(hashtext(p_doctor_id::text));
+    perform pg_advisory_xact_lock(hashtext(p_doctor_id::text));
 
     insert into doctors_schedule
     (  
@@ -57,7 +61,7 @@ BEGIN
     ) values (
         p_doctor_id,
         'Doctor'::e_staff_role,
-        v_clinic_id,
+        v_valid_clinic_id,
         p_time_shift_starts,
         p_day_shift_starts,
         p_time_shift_ends

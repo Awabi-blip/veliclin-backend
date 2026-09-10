@@ -66,8 +66,7 @@ async fn add_patients(
     body.validate()
     .map_err(|e| ApiError::BadRequest(e.to_string()))?;
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     let doctor_id : Uuid;
 
@@ -82,12 +81,12 @@ async fn add_patients(
     };
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     sqlx::query!(
     "CALL add_patients_to_clinics($1, $2, $3, $4, $5, $6::citext)",
@@ -95,8 +94,8 @@ async fn add_patients(
     body.gender as Gender, body.email
     )
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+.await?;
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -140,8 +139,7 @@ async fn update_patients(
         return Err(ApiError::BadRequest("No fields to update".to_string()))
     }
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if !matches!(user.user_role, StaffRole::Doctor | StaffRole::Receptionist | StaffRole::Manager) {
         return Err(ApiError::Unauthorized);
@@ -160,16 +158,16 @@ async fn update_patients(
     builder.push(" WHERE id = ").push_bind(patient_id);
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     builder.build().execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -214,20 +212,19 @@ async fn add_patients_information (
     }
 
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if user.user_role != StaffRole::Doctor {
         return Err(ApiError::Unauthorized)
     };
     
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     sqlx::query!(
     "CALL add_patients_data($1, $2, $3, $4, $5, $6)",
@@ -235,8 +232,8 @@ async fn add_patients_information (
     body.height_cm, body.weight_kg, body.note
     )
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -262,8 +259,7 @@ async fn update_patients_information(
         return Err(ApiError::BadRequest("No fields to update".to_string()));
     }
 
-    let user = get_user(&cookie)
-        .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if user.user_role != StaffRole::Doctor {
         return Err(ApiError::Unauthorized);
@@ -279,17 +275,14 @@ async fn update_patients_information(
     if let Some(v) = &body.note       { fields.push("note = ");       fields.push_bind_unseparated(v); }
 
     let mut conn = db.pool.acquire()
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     builder.push(" WHERE patient_id = ").push_bind(patient_id);
     builder.build().execute(&mut *conn)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -354,8 +347,7 @@ async fn view_patients(
     NoApi(cookie)       : NoApi<Cookies>,
     ) -> Result<Json<PatientsResponse>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if !matches!(user.user_role, StaffRole::Doctor | StaffRole::Manager 
         | StaffRole::Receptionist) {
@@ -363,12 +355,10 @@ async fn view_patients(
     };
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     match user.user_role {
         StaffRole::Doctor => {
@@ -389,8 +379,8 @@ async fn view_patients(
             "#
             )
             .fetch_all(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
+
             Ok(Json(PatientsResponse::Doctor(p)))
         }
 
@@ -407,8 +397,8 @@ async fn view_patients(
             "#
             )
             .fetch_all(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
+
         
         Ok(Json(PatientsResponse::Staff(p)))
         
@@ -432,12 +422,10 @@ async fn view_patient(
     }
 
     let mut conn = db.pool.acquire()
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-        .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     match user.user_role {
         StaffRole::Doctor => {
@@ -459,8 +447,7 @@ async fn view_patient(
             "#, patient_id
             )
             .fetch_optional(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
 
             Ok(Json(PatientResponse::Doctor(p)))
         }
@@ -479,8 +466,7 @@ async fn view_patient(
                 "#, patient_id
             )
             .fetch_optional(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
 
             Ok(Json(PatientResponse::Staff(p)))
         }
@@ -497,28 +483,24 @@ async fn delete_patients(
     Path(patient_id): Path<uuid::Uuid>,
     ) -> Result<Json<SuccessResponse>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
-
+    let user = get_user(&cookie)?;
     if user.user_role != Doctor {
         return Err(ApiError::Unauthorized)
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "DELETE FROM patients_in_clinics WHERE patient_id = $1",
         patient_id
     )
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

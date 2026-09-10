@@ -307,13 +307,38 @@ pub fn get_user_id_for_payment(cookie: &Cookies) -> Result<Uuid, ApiError> {
     Ok(token_data.claims.user_id)
 }
 
-#[derive(Debug, aide::OperationIo)]
+#[derive(Debug, thiserror::Error, aide::OperationIo)]
 #[aide(output)]
 pub enum ApiError {
+    #[error("unauthorized")]
     Unauthorized,
+    #[error("bad request: {0}")]
     BadRequest(String),
+    #[error("not found: {0}")]
     NotFound(String),
+    
+    #[error("Internel Server Error:{0}")]
     InternalServerError(String),
+    
+    #[error("Database error")]
+    Database(sqlx::Error),
+
+    #[error("Cache error")]
+    Cache(#[from] fred::error::Error),
+
+}
+
+
+impl From<sqlx::Error> for ApiError {
+    fn from(err: sqlx::Error) -> Self {
+        if let sqlx::Error::Database(db_err) = &err {
+            if db_err.code().as_deref() == Some("P2001") {
+                return ApiError::BadRequest(db_err.message().to_string());
+            }
+        }
+
+        ApiError::Database(err)
+    }
 }
 
 #[derive(Serialize)]
@@ -327,11 +352,23 @@ impl IntoResponse for ApiError {
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            
             ApiError::InternalServerError(err) => {
-                tracing::error!(error = %err, "internal server error");
+                tracing::error!(error = ?err, "some weird bug");
+                (StatusCode::INTERNAL_SERVER_ERROR, err)},
+            
+            ApiError::Database(err) => {
+                tracing::error!(error = ?err, "database error");
                 (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
-            }        
-        };
+            },   
+
+            ApiError::Cache(err) => {
+                tracing::error!(error = ?err, "valkey error");
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internel serve error".to_string())
+            }
+        }
+        
+        ;
 
         (status, Json(ErrorBody { message })).into_response()
     }
@@ -456,7 +493,6 @@ pub fn match_auth(
             )
             .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-            
 
             let mut cookie = Cookie::new("SessionCookie", token);
             cookie.set_path("/");

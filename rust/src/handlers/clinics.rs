@@ -66,21 +66,17 @@ pub async fn create_clinic(
     body                         : Json<ClinicInformation>
 ) ->  Result<Redirect, ApiError> {
 
-    let user_id = get_user_id_for_invitation(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user_id = get_user_id_for_invitation(&cookie)?;
 
     if body.clinic_name.is(Type::INAPPROPRIATE){
         return Err(ApiError::BadRequest("Inappropriate clinic name".to_string()))
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
 
     let sqlx::types::Json(auth): sqlx::types::Json<AuthResponse> = sqlx::query_scalar!(
         r#"
@@ -100,8 +96,7 @@ pub async fn create_clinic(
         body.self_role as _
     )
     .fetch_one(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
                                         
     let redirect_page = match_auth(auth, &cookie)?;
     
@@ -167,16 +162,13 @@ pub async fn view_clinic(
     Path(clinic_id)        : Path<uuid::Uuid>
 ) ->  Result<Json<ClinicResponse>, ApiError>{
 
-    let auth = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let auth = get_user(&cookie)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, auth.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     match auth {
         User {
@@ -207,8 +199,7 @@ pub async fn view_clinic(
                 clinic_id
             )
             .fetch_one(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
 
             Ok(Json(ClinicResponse::Manager(rows)))
         }
@@ -234,8 +225,7 @@ pub async fn view_clinic(
                 clinic_id
             )
             .fetch_one(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .await?;
 
             Ok(Json(ClinicResponse::Staff(rows)))
         }
@@ -258,8 +248,7 @@ async fn create_otp_delete_clinic(
 
     ) ->  Result<Redirect, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if user.user_role != StaffRole::Owner || !user.owner {
         return Err(ApiError::Unauthorized)
@@ -274,16 +263,13 @@ async fn create_otp_delete_clinic(
     let app_data = get_permenant_app_data();
 
     let _: () = vk.set(&key, &value, Some(Expiration::EX(500)), None, false)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let cf = sqlx::query_as!(
         ConfirmationAnalysis,
@@ -293,9 +279,7 @@ async fn create_otp_delete_clinic(
         user.user_id
     )
     .fetch_one(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
     let resend = &app_data.resend;
 
     let from = "Veliclin <no-reply@veliclin.com>";
@@ -345,8 +329,7 @@ pub async fn enter_otp_delete_clinic(
     body.validate()
     .map_err(|e| ApiError::BadRequest(e.to_string()))?;
             
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?; 
+    let user = get_user(&cookie)?;
 
     if user.user_role != StaffRole::Owner || !user.owner {
         return Err(ApiError::Unauthorized)
@@ -355,8 +338,7 @@ pub async fn enter_otp_delete_clinic(
     let key = format!("otp:{}", user.user_id);
 
     let value: Option<String> = vk.get(&key)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let value = value.ok_or_else(
         || ApiError::NotFound("Clinic deletion not initialised".to_string())
@@ -367,19 +349,15 @@ pub async fn enter_otp_delete_clinic(
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!(
         "CALL delete_clinics()"
     ).execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

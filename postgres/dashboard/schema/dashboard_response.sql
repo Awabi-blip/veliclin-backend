@@ -46,8 +46,10 @@ begin
         where owner_id = v_staff_id;
     end if;
 
-    if v_clinic_id is null 
-        then raise exception 'unauthorized';
+    if v_clinic_id is null then 
+        raise exception using 
+        errcode = 'P2001',
+        message = 'unauthorized';
     end if;
 
     
