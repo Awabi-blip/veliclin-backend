@@ -195,11 +195,12 @@ select * from profiles;
 
 set role postgres;
 set role app;
-set myapp.user_id = '01a08493-22e5-7800-b28b-49fd98035d05';
+set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
 
 select * from profiles join staffs_in_clinics on profiles.id = staffs_in_clinics.staff_id
 
 select * from view_patients_as_doctors;
+
 
 
 create view view_patients_as_staff

@@ -22,7 +22,9 @@ begin
         select 1 from patients_in_clinics where patient_id = p_patient_id
         and clinic_id = v_clinic_id
         and added_by = v_doctor_id
-    ) then raise exception 'patient not found, or not yours';
+    ) then raise exception using 
+        errcode = 'P2001',
+        message =  'patient not found, or not yours';
     end if;
 
     insert into patient_prescriptions (

@@ -1,5 +1,8 @@
 ALTER TABLE patients_information ENABLE ROW LEVEL SECURITY;
 
+drop policy clinic_staff_view_their_patients 
+on patients_information
+
 create policy clinic_staff_view_their_patients 
 on patients_information
 for select to public 
@@ -16,9 +19,7 @@ using (
     exists (
         select 1 from staffs_in_clinics, clinics where
         patients_information.clinic_id    = clinics.clinic_id
-        and patients_information.added_by = staffs_in_clinics.staff_id
         and staffs_in_clinics.staff_id    = NULLIF(current_setting('myapp.user_id', true), '')::uuid
-        and staffs_in_clinics.staff_id    = patients_information.added_by
         and staffs_in_clinics.staff_role  = 'Doctor'::e_staff_role
         and clinics.all_visibility        = false
     )
@@ -40,6 +41,11 @@ using (
     )
 );
 
+
+drop policy clinic_staff_view_their_patients 
+on patients_information
+
+
 create policy clinic_staff_view_their_patients 
 on patients_information
 for insert to public 
@@ -54,13 +60,11 @@ with check (
     )
     or
     exists (
-        select 1 from staffs_in_clinics, clinics 
-        where patients_information.clinic_id = clinics.clinic_id
-        and patients_information.added_by    = staffs_in_clinics.staff_id
-        and staffs_in_clinics.staff_id       = NULLIF(current_setting('myapp.user_id', true), '')::uuid
-        and staffs_in_clinics.staff_id       = patients_information.added_by
-        and staffs_in_clinics.staff_role     = 'Doctor'::e_staff_role
-        and clinics.all_visibility           = false
+        select 1 from staffs_in_clinics, clinics where
+        patients_information.clinic_id    = clinics.clinic_id
+        and staffs_in_clinics.staff_id    = NULLIF(current_setting('myapp.user_id', true), '')::uuid
+        and staffs_in_clinics.staff_role  = 'Doctor'::e_staff_role
+        and clinics.all_visibility        = false
     )
     or 
     exists (
@@ -80,6 +84,8 @@ with check (
     )
 );
 
+
+
 create policy clinic_staff_view_their_patients 
 on patients_information
 for update to public 
@@ -94,13 +100,11 @@ using (
     )
     or
     exists (
-        select 1 from staffs_in_clinics, clinics 
-        where patients_information.clinic_id = clinics.clinic_id
-        and patients_information.added_by    = staffs_in_clinics.staff_id
-        and staffs_in_clinics.staff_id       = NULLIF(current_setting('myapp.user_id', true), '')::uuid
-        and staffs_in_clinics.staff_id       = patients_information.added_by
-        and staffs_in_clinics.staff_role     = 'Doctor'::e_staff_role
-        and clinics.all_visibility           = false
+        select 1 from staffs_in_clinics, clinics where
+        patients_information.clinic_id    = clinics.clinic_id
+        and staffs_in_clinics.staff_id    = NULLIF(current_setting('myapp.user_id', true), '')::uuid
+        and staffs_in_clinics.staff_role  = 'Doctor'::e_staff_role
+        and clinics.all_visibility        = false
     )
     or 
     exists (
@@ -119,6 +123,7 @@ using (
         and   patients_in_clinics.added_by    = NULLIF(current_setting('myapp.user_id', true), '')::uuid
     )
 );
+
 
 
 create policy clinic_staff_view_their_patients 
@@ -135,13 +140,11 @@ using (
     )
     or
     exists (
-        select 1 from staffs_in_clinics, clinics 
-        where patients_information.clinic_id = clinics.clinic_id
-        and patients_information.added_by = staffs_in_clinics.staff_id
-        and staffs_in_clinics.staff_id = NULLIF(current_setting('myapp.user_id', true), '')::uuid
-        and staffs_in_clinics.staff_id = patients_information.added_by
-        and staffs_in_clinics.staff_role = 'Doctor'::e_staff_role
-        and clinics.all_visibility = false
+        select 1 from staffs_in_clinics, clinics where
+        patients_information.clinic_id    = clinics.clinic_id
+        and staffs_in_clinics.staff_id    = NULLIF(current_setting('myapp.user_id', true), '')::uuid
+        and staffs_in_clinics.staff_role  = 'Doctor'::e_staff_role
+        and clinics.all_visibility        = false
     )
     or 
     exists (

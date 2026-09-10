@@ -11,6 +11,8 @@ select * from doctors_schedule;
 SET myapp.user_id = '019f8cbb-caf8-7fb4-99e4-88421e1167c2';
 
 select * from doctors_schedule;
+set role postgres;
+select * from clinics;
 
 CALL add_appointments(
     '019f8cbb-caf8-7fb4-99e4-88421e1167c2',   -- doctor_id
@@ -66,7 +68,7 @@ declare
 begin
 
     if v_valid_clinic_id    is null or v_valid_doctor_clinic_id is null or 
-    timezone                is null or v_appointment_start_time is null or 
+    v_timezone                is null or v_appointment_start_time is null or 
     v_appointment_end_time  is null
     then
         raise exception using 

@@ -16,7 +16,9 @@ BEGIN
     (f_user_id, f_first_name, f_last_name, f_gender, f_DoB);
     
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Could not add user';
+        raise exception using 
+        errcode = 'P2001',
+        message = 'Could not add user';
     END IF;
 
     SELECT determine_auth_response(f_user_id)
