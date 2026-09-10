@@ -2,7 +2,7 @@
 
 ## Features/General Workflow:
 An owner can create a clinic and add staff in there.
-- Staff could have roles from ``` doctor, manager, nurse``` with each role having its own permissions/privileges
+- Staff could have roles from ``` doctor, manager, receptionistu``` with each role having its own permissions/privileges
 
 The owner can invite the staff via using their email that the staff used to create their veliclin account with.
 
