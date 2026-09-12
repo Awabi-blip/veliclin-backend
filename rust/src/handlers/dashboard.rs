@@ -39,31 +39,40 @@ pub async fn load_dashboard(
     let user = get_user(&cookie)?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
     let key = format!("dashboard:{}", user.clinic_id);
 
-    let cached_response: Option<String> =
-     vk.get(&key)
-    .await
-    .map_err(|e| ApiError::InternalServerError(
-        format!("dashboard redis GET: {}", e)
-    ))?;
+    let cached_response: Result<Option<String>, Error> = vk.get(&key)
+    .await;
 
-    if let Some(cached_response) = cached_response {
-
-        let cached_response: serde_json::Value = serde_json::from_str(&cached_response)
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-    
-       return  Ok(Json(DashboardResponse {
-        dashboard_response: cached_response
-        }))
-
+    match cached_response {
+        
+        Err(e) => {
+            tracing::warn!("dashboard redis GET failed, skipping cache: {}", e);
+            // fall through — treat this like a cache miss, rest of the function still runs
+        }
+        
+        Ok(cached_response) => {
+            if let Some(cached_response) = cached_response {
+                
+                match serde_json::from_str::<serde_json::Value>(&cached_response) {
+                    Ok(cached_response) => {
+                        return Ok(Json(DashboardResponse {
+                            dashboard_response: cached_response,
+                        }));
+                    }
+                    Err(e) => {
+                        tracing::warn!("dashboard cache deserialize failed, skipping cache: {}", e);
+                        // fall through instead of ?-propagating — a corrupt cache entry
+                        // shouldn't take down the whole request
+                    }
+                }
+            }
+            // None => cache miss, just fall through
+        }
     }
 
     let result: serde_json::Value = sqlx::query_scalar!(
@@ -72,15 +81,10 @@ pub async fn load_dashboard(
         "#
     )
     .fetch_one(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     vk.set::<(), _, _>(&key, result.to_string(), Some(Expiration::EX(300)), None, false)
-    .await
-    .map_err(|e| ApiError::InternalServerError(
-        format!("dashboard redis SET: {}", e)
-        ))?;
-
+    .await?;
 
      Ok(Json(DashboardResponse {
                 dashboard_response: result
