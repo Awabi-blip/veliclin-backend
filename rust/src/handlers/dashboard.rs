@@ -83,8 +83,14 @@ pub async fn load_dashboard(
     .fetch_one(&mut *conn)
     .await?;
 
-    vk.set::<(), _, _>(&key, result.to_string(), Some(Expiration::EX(300)), None, false)
-    .await?;
+    match vk.set::<(), _, _>(&key, result.to_string(), Some(Expiration::EX(300)), None, false)
+    .await {
+        Ok(_) => {}
+
+        Err(e) => {
+            tracing::warn!("Dashboard Cache set failed: continuing without cache {}", e)
+        }
+    }
 
      Ok(Json(DashboardResponse {
                 dashboard_response: result
