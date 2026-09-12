@@ -25,11 +25,32 @@ Track Prescriptions
 
 --
 
+## Feature usage with role permisions:
+Create Appointment:
+- Doctor, Manager, Receptionist
+
+Add data to Appointment:
+- Doctor (their own appointment only)
+
+Cancel Appointment:
+- Doctor, Manager, Receptionist
+
+Reschedule Appointment:
+- Doctor, Manager, Receptionist
+
+Start Appointment:
+- Doctor, Manager, Receptionist
+
+
+
 ## Rules:
 An appointment must lie within a doctor's set schedule.
 
-A patient's information is only visible to doctor that it has been added under the id of initially, but via referrals, 
-other doctors can see that patient.
+An appointment must be started under 2 hours of scheduled time, i.e if it was scheduled for 7:00pm, you can not start it after 9:00pm, unless you want to specify that time, it can be a feature added in future.
+
+A doctor can only add appointment data to their own appointments.
+
+A patient's information is only visible to doctor that it has been added under the id of initially, but via referrals, via having atleast one appointment with that patient.
 
 If the clinic's all_visibility is set to true, the patient initially is still added under a doctor's name, but all doctors
 can see the patients information
