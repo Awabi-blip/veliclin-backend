@@ -1,3 +1,4 @@
 /target
 /logs
 .env
+connect_db.sh

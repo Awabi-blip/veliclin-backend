@@ -1,4 +1,4 @@
--- Active: 1778842009804@@127.0.0.1@5432@cliniqo
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 CREATE OR REPLACE FUNCTION f()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -12,18 +12,13 @@ BEGIN
     	then de := 8;
     end if;
 
-    RAISE NOTICE 'de after wrap check: %', de;
-
     if de - ds not in (0,1) then
-        RAISE NOTICE 'FAIL — spans more than 1 day: de - ds = %', de - ds;
-        raise exception '';
+        raise exception using 
+        errcode = 'P2001', 
+        message = 'Difference between day end and day start is not one';
     end if;  
 
-    RAISE NOTICE 'span check passed';
-
     if NEW.day_shift_starts != NEW.day_shift_ends then
-
-        RAISE NOTICE 'rollover detected — checking overlap';
         
         --day_shift_starts = Monday
         --day_shift_ends   = Tuesday
@@ -67,10 +62,13 @@ BEGIN
             (NEW.time_shift_starts, '23:59:00'::TIME))
 
         ))
-        ) then 
-            RAISE NOTICE 'FAIL — overlap found';
-            raise exception 'no';
+        ) then
+        raise exception using 
+            errcode = 'P2001', 
+            message = 'Appointment is outside of doctor''s schedule';
         end if;
+
+        
 
     elseif NEW.day_shift_starts = NEW.day_shift_ends then
         if exists (SELECT 1 FROM doctors_schedule WHERE
@@ -105,7 +103,9 @@ BEGIN
             ))
  
         then 
-            raise exception 'no';
+        raise exception using 
+        errcode = 'P2001', 
+        message = 'Appointment falls out of doctor''schedule';
         end if;
     
     end if;

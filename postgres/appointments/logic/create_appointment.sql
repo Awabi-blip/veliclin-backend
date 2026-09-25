@@ -29,6 +29,7 @@ create or replace procedure add_appointments(
     p_duration_hours decimal(2, 1),
     p_meeting_link   VARCHAR(2048)
 )
+security definer
 as $$
 declare
     v_staff_id               uuid           := current_setting('myapp.user_id')::uuid;
@@ -117,7 +118,7 @@ begin
                     when v_appointment_start_time < v_appointment_end_time then
                         
                             --26:00, or 2am (if we series off 24)           22:00, 10pm                              
-                        v_appointment_start_time +INTERVAL '24 hours' >= time_shift_starts
+                        v_appointment_start_time + INTERVAL '24 hours' >= time_shift_starts
                             --4:00                     7:00am 
                         and v_appointment_end_time <= time_shift_ends      
                 end

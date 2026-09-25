@@ -3,6 +3,9 @@ select * from appointments;
 set role app;
 set role postgres;
 
+select * from clinics;
+
+update clinics set expires_at = now() + INTERVAL '30 days';
 call cancel_appointment(2);
 
 create or replace procedure cancel_appointment(
