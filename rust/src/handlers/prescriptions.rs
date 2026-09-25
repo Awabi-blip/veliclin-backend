@@ -20,11 +20,13 @@ use aide::NoApi;
 use schemars::JsonSchema;
 use aide::axum::ApiRouter;
 use aide::axum::routing::{post, patch};
+use tower_http::trace::TraceLayer;
 
 pub fn prescription_routes() -> ApiRouter {
     ApiRouter::new()
         .api_route("/prescriptions", post(add_prescription).get(view_prescriptions))
         .api_route("/prescriptions/{prescription_id}", patch(update_prescription))
+        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

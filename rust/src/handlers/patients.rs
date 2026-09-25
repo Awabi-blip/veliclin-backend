@@ -22,12 +22,15 @@ use schemars::JsonSchema;
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get, post, patch};
 
+use tower_http::trace::TraceLayer;
+
 pub fn patient_routes() -> ApiRouter {
     ApiRouter::new()
         .api_route("/patients", post(add_patients).get(view_patients))
         .api_route("/patients/{patient_id}", get(view_patient).patch(update_patients).delete(delete_patients))
         .api_route("/patients/sensitive", post(add_patients_information))
         .api_route("/patients/sensitive/{patient_id}", patch(update_patients_information))
+        .layer(TraceLayer::new_for_http())
 }   
 
 #[derive(Serialize, JsonSchema)]

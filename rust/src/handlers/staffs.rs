@@ -15,11 +15,14 @@ use schemars::JsonSchema;
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get, post, delete};
 
+use tower_http::trace::TraceLayer;
+
 pub fn staff_invitation_routes() -> ApiRouter {
     ApiRouter::new()
         .api_route("/staff/invitations", post(send_invitation).get(view_invitations))
         .api_route("/staff/{staff_id}", delete(remove_staff_from_clinic))
         .api_route("/staff/invitations/{invitation_id}", get(view_invitation).post(accept_invitation).delete(reject_invitation))
+        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

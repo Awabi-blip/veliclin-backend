@@ -3876,10 +3876,12 @@ dependencies = [
  "bitflags 2.11.1",
  "bytes",
  "http 1.4.0",
+ "http-body 1.0.1",
  "percent-encoding",
  "pin-project-lite",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

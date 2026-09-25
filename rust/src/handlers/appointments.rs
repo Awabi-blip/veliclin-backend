@@ -17,6 +17,7 @@ use schemars::JsonSchema;
 use crate::utils::{get_user};
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get, post, patch, delete};
+use tower_http::trace::TraceLayer;
 
 // in handlers/appointments.rs
 pub fn appointment_routes() -> ApiRouter {
@@ -28,6 +29,7 @@ pub fn appointment_routes() -> ApiRouter {
         .api_route("/appointments/{appointment_id}/start", post(start_appointment))
         .api_route("/appointments/data", post(add_data_to_appointments))
         .api_route("/appointments/{appointment_id}/data", patch(update_data_to_appointments))
+        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

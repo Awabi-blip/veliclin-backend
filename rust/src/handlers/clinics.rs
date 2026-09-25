@@ -19,7 +19,7 @@ use aide::axum::ApiRouter;
 use aide::axum::routing::{get, post};
 use chrono_tz::Tz;
 use resend_rs::types::{CreateEmailBaseOptions};
-
+use tower_http::trace::TraceLayer;
 
 pub fn clinics_routes() -> ApiRouter<Client>{
     ApiRouter::new()
@@ -27,6 +27,7 @@ pub fn clinics_routes() -> ApiRouter<Client>{
         .api_route("/clinics/{clinic_id}", get(view_clinic))
         .api_route("/clinics/deletion/request", post(create_otp_delete_clinic))
         .api_route("/clinics/deletion/confirm", post(enter_otp_delete_clinic))
+        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

@@ -15,10 +15,12 @@ use rustrict::{CensorStr, Type};
 use aide::axum::ApiRouter;
 use aide::axum::routing::post;
 use tower_cookies::{Cookie, Cookies};
+use tower_http::trace::TraceLayer;
 
 pub fn profile_routes() -> ApiRouter {
     ApiRouter::new()
         .api_route("/profile", post(build_profile))
+        .layer(TraceLayer::new_for_http())
 }
 
 
