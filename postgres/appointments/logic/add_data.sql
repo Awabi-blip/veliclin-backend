@@ -1,3 +1,4 @@
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 create or replace procedure add_data_to_appointment(
     p_appointment_id bigint,
     p_note           varchar(1000),
@@ -69,4 +70,10 @@ begin
 
 end;
 $$;
+
+
+select * from app_users;
+
+
+set role postgres;
 

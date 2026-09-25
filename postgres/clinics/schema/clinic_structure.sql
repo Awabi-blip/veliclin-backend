@@ -195,7 +195,11 @@ select * from profiles;
 
 set role postgres;
 set role app;
-set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+set myapp.user_id = '01a0d811-cd16-7437-b1da-8966faec33c4';
+
+select * from invitations
+
+select * from app_users;
 
 select * from profiles join staffs_in_clinics on profiles.id = staffs_in_clinics.staff_id
 

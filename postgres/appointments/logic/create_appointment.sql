@@ -8,7 +8,10 @@
 select * from staffs_in_clinics;
 
 select * from doctors_schedule;
-SET myapp.user_id = '019f8cbb-caf8-7fb4-99e4-88421e1167c2';
+SET myapp.user_id = '01a0d811-cd16-7437-b1da-8966faec33c4';
+set role app;
+
+select * from invitations;
 
 select * from doctors_schedule;
 set role postgres;
