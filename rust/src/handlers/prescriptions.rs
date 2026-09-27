@@ -1,6 +1,8 @@
 use axum::{
     Extension, extract::Json,
-    extract::Query, extract::Path
+    extract::Query, extract::Path,
+    extract::rejection::QueryRejection,
+
 };
 
 use serde::{Serialize,Deserialize};
@@ -21,6 +23,7 @@ use schemars::JsonSchema;
 use aide::axum::ApiRouter;
 use aide::axum::routing::{post, patch};
 use tower_http::trace::TraceLayer;
+
 
 pub fn prescription_routes() -> ApiRouter {
     ApiRouter::new()
@@ -124,11 +127,16 @@ pub enum PrescriptionStatus {
     Completed
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct PrescriptionFilter {
+    status : PrescriptionStatus,
+}
+
 #[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn view_prescriptions(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
-    Query(filter): Query<PrescriptionStatus>,
+    Query(filter): Query<PrescriptionFilter>,
 
 ) -> Result<Json<Vec<PrescriptionRecord>>, ApiError> {
 
@@ -147,7 +155,7 @@ pub async fn view_prescriptions(
     .await
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-    let prescriptions = match filter {
+    let prescriptions = match filter.status {
         PrescriptionStatus::OnGoing => {
             sqlx::query_as!(
                 PrescriptionRecord,

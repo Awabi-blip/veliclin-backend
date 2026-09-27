@@ -7,6 +7,8 @@
 
 select * from staffs_in_clinics;
 
+select * from appointments;
+
 select * from doctors_schedule;
 SET myapp.user_id = '01a0d811-cd16-7437-b1da-8966faec33c4';
 set role app;

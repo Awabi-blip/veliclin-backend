@@ -26,7 +26,7 @@ pub fn appointment_routes() -> ApiRouter {
         .api_route("/appointments", get(view_appointments))
         .api_route("/appointments/{appointment_id}", patch(reschedule_appointment))
         .api_route("/appointments/{appointment_id}", delete(delete_appointments))
-        .api_route("/appointments/{appointment_id}/start", post(start_appointment))
+        .api_route("/appointments/{app-ointment_id}/start", post(start_appointment))
         .api_route("/appointments/data", post(add_data_to_appointments))
         .api_route("/appointments/{appointment_id}/data", patch(update_data_to_appointments))
         .layer(TraceLayer::new_for_http())
@@ -262,7 +262,7 @@ pub async fn view_appointments(
 #[tracing::instrument(skip(db, cookies, appointment_id), err(Debug))]
 pub async fn start_appointment(
     Extension(db): Extension<DatabaseDriver>,
-    NoApi(cookies)               : NoApi<Cookies>,
+    NoApi(cookies)      : NoApi<Cookies>,
     Path(appointment_id)    : Path<i64>,
 
 
@@ -281,10 +281,7 @@ pub async fn start_appointment(
     .await?;
    
     sqlx::query!(
-        r#"UPDATE appointments
-        SET status = 'On_going'::e_appointment_status
-        WHERE appointment_id = $1
-        "#, appointment_id
+        r#"CALL start_appointment($1)"#, appointment_id
     ).execute(&mut *conn)
     .await?;
 

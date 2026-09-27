@@ -1,9 +1,18 @@
 -- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
-drop function start_appointment();
+drop function start_appointment;
+select * from appointments;
+SELECT * FROM staffs_in_clinics join app_users on staffs_in_clinics.staff_id = app_users.id
 
-create or replace function start_appointment(
-    f_appointment_id BIGINT
-) returns VOID
+set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+set role postgres;
+set role app;
+call start_appointment(12)
+
+select * from appointments;
+
+create or replace procedure start_appointment(
+    p_appointment_id BIGINT
+)
 security definer
 as $$
 declare 
@@ -12,33 +21,26 @@ v_valid_clinic_id  uuid                  := (
                                             select clinic_id
                                             from   staffs_in_clinics
                                             where  staff_id   = v_staff_id
-                                            and  staff_role in (
+                                            and    staff_role in (
                                                     'Doctor'::e_staff_role,
                                                     'Manager'::e_staff_role,
-                                                    'Receptionist'::e_staff_role
-                                                )
-                                            and    is_active  = true
+                                                    'Receptionist'::e_staff_role)
+                                                
+                                            and    is_active  = true);
 
-);
-v_scheduled_at     TIMESTAMPTZ           := (SELECT scheduled_at FROM appointments WHERE id = f_appointment_id);
-v_status           E_appointment_status  := (SELECT status FROM appointments WHERE id = f_appointment_id);
-v_hour_difference  SMALLINT              := (SELECT (EXTRACT(EPOCH FROM (v_scheduled_at - now()))) / 3600);
+v_status           E_appointment_status  := (SELECT status FROM appointments 
+                                             WHERE appointment_id = p_appointment_id 
+                                             AND   clinic_id      = v_valid_clinic_id);
 BEGIN
 
-    if v_valid_clinic_id is null then
+    if (v_valid_clinic_id is null) 
+    or (v_status is null) then
         raise exception using
         errcode = 'P2001',
         message = 'unauthorised for this action';
     end if;
-
-    if v_hour_difference > 2
-    then
-      raise exception using 
-        errcode = 'P2001',
-        message = 'hour difference cant be more than 2';
-    end if;
     
-    if v_status != 'scheduled'
+    if v_status != 'Scheduled'::e_appointment_status
         then 
         raise exception using 
         errcode = 'P2001',
@@ -46,8 +48,8 @@ BEGIN
     end if;
 
     update appointments
-    set  "status" = 'on_going'
-    where id = f_appointment_id;
+    set  "status" = 'On_going'::e_appointment_status
+    where appointment_id = p_appointment_id;
 
 end;
 $$ language plpgsql;
