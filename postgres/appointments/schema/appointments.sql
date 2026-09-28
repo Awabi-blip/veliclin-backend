@@ -1,7 +1,5 @@
 CREATE TYPE e_appointment_status AS ENUM ('Scheduled', 'Completed', 'Cancelled', 'On_going');
 
-
-
 CREATE TABLE IF NOT EXISTS appointments (
     "appointment_id"     BIGSERIAL,
     "doctor_id"          UUID NOT NULL,
@@ -94,5 +92,3 @@ ALTER TABLE appointments
 ALTER COLUMN diagnosis TYPE VARCHAR(500);
 
 create extension if not exists btree_gist;
-
-

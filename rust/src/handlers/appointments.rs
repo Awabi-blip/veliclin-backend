@@ -26,7 +26,8 @@ pub fn appointment_routes() -> ApiRouter {
         .api_route("/appointments", get(view_appointments))
         .api_route("/appointments/{appointment_id}", patch(reschedule_appointment))
         .api_route("/appointments/{appointment_id}", delete(delete_appointments))
-        .api_route("/appointments/{app-ointment_id}/start", post(start_appointment))
+        .api_route("/appointments/{appointment_id}/start", post(start_appointment))
+        .api_route("/appointments/{appointment_id}/end", post(end_appointment))
         .api_route("/appointments/data", post(add_data_to_appointments))
         .api_route("/appointments/{appointment_id}/data", patch(update_data_to_appointments))
         .layer(TraceLayer::new_for_http())
@@ -259,7 +260,7 @@ pub async fn view_appointments(
 }
 
 
-#[tracing::instrument(skip(db, cookies, appointment_id), err(Debug))]
+#[tracing::instrument(skip(db, cookies), err(Debug))]
 pub async fn start_appointment(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookies)      : NoApi<Cookies>,
@@ -279,7 +280,7 @@ pub async fn start_appointment(
 
     db.set_rls(&mut conn, user.user_id)
     .await?;
-   
+    
     sqlx::query!(
         r#"CALL start_appointment($1)"#, appointment_id
     ).execute(&mut *conn)
@@ -289,6 +290,41 @@ pub async fn start_appointment(
         message: "Success".to_string()
     }))
 }
+
+#[tracing::instrument(skip(db, cookies), err(Debug))]
+pub async fn end_appointment(
+    Extension(db): Extension<DatabaseDriver>,
+    NoApi(cookies)      : NoApi<Cookies>,
+    Path(appointment_id)    : Path<i64>,
+
+
+) -> Result<Json<SuccessResponse>, ApiError> {
+    
+    let user = get_user(&cookies)?;
+
+    if !matches!(user.user_role, StaffRole::Manager | StaffRole::Doctor) {
+        return Err(ApiError::Unauthorized);
+    }
+
+    let mut conn = db.pool.acquire()
+    .await?;
+
+    db.set_rls(&mut conn, user.user_id)
+    .await?;
+    
+    sqlx::query!(
+        r#"CALL end_appointment($1)"#, appointment_id
+    ).execute(&mut *conn)
+    .await?;
+
+    Ok(Json(SuccessResponse {
+        message: "Success".to_string()
+    }))
+}
+
+
+
+
 
 #[derive(Validate, Deserialize, JsonSchema)]
 pub struct AppointmentData {
