@@ -23,7 +23,6 @@ pub fn doctor_schedule_routes() -> ApiRouter {
         .api_route("/doctors/schedules", post(add_doctor_schedule))
         .api_route("/doctors/{doctor_id}/schedules", get(view_doctors_schedule))
         .api_route("/doctors/schedules/delete", post(delete_doctors_schedule))
-        .layer(TraceLayer::new_for_http())
 }
 
 

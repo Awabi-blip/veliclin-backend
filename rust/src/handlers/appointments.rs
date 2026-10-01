@@ -30,7 +30,6 @@ pub fn appointment_routes() -> ApiRouter {
         .api_route("/appointments/{appointment_id}/end", post(end_appointment))
         .api_route("/appointments/data", post(add_data_to_appointments))
         .api_route("/appointments/{appointment_id}/data", patch(update_data_to_appointments))
-        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

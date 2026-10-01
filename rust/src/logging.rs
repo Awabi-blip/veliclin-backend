@@ -6,7 +6,7 @@ pub fn init_logging() -> WorkerGuard {
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
     let filter = EnvFilter::try_from_default_env()
-    .unwrap_or_else(|_| EnvFilter::new("debug"));
+    .unwrap_or_else(|_| EnvFilter::new("info"));
 
     let file_layer = fmt::layer()
     .with_writer(non_blocking)

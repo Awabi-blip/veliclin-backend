@@ -27,7 +27,6 @@ pub fn clinics_routes() -> ApiRouter<Client>{
         .api_route("/clinics/{clinic_id}", get(view_clinic))
         .api_route("/clinics/deletion/request", post(create_otp_delete_clinic))
         .api_route("/clinics/deletion/confirm", post(enter_otp_delete_clinic))
-        .layer(TraceLayer::new_for_http())
 }
 
 #[derive(Serialize, JsonSchema)]

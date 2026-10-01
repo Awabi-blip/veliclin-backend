@@ -11,7 +11,7 @@ use tracing;
 
 pub fn auth_routes() -> ApiRouter {
     ApiRouter::new()
-        .route("/auth/clerk/callback", post(clerk_callback))
+    .route("/auth/clerk/callback", post(clerk_callback))
 }
 
 #[derive(Deserialize)]
