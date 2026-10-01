@@ -307,6 +307,25 @@ pub fn get_user_id_for_payment(cookie: &Cookies) -> Result<Uuid, ApiError> {
     Ok(token_data.claims.user_id)
 }
 
+pub fn get_generel_login_cookie(cookie: &Cookies) -> Result<Uuid, ApiError> {
+    
+    let creds  = get_permenant_app_data();
+
+    let cookie = cookie.get("GeneralLoginCookie")
+    .ok_or(ApiError::Unauthorized)?;
+
+    let token_data: jsonwebtoken::TokenData<GeneralLoginClaims> = decode::<GeneralLoginClaims>(
+        cookie.value(),
+        &creds.jwt_decoding_key,
+        &Validation::default(),
+    )
+    .map_err(|_| ApiError::Unauthorized)?;
+    
+    Ok(token_data.claims.user_id)
+
+}
+
+
 #[derive(Debug, thiserror::Error, aide::OperationIo)]
 #[aide(output)]
 pub enum ApiError {

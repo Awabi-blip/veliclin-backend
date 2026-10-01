@@ -155,7 +155,6 @@ pub enum ClinicResponse {
     Staff(ViewClinicInformationStaff)
 }
 
-
 #[tracing::instrument(skip(db, cookie), err(Debug))]
 pub async fn view_clinic(
     Extension(db): Extension<DatabaseDriver>,

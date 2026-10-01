@@ -38,13 +38,6 @@ pub struct SuccessResponse {
     pub message : String
 }
 
-#[derive(Serialize, JsonSchema)]
-#[serde(untagged)]
-pub enum AppointmentsResponse {
-    Doctor(Vec<ReturnAppointmentsForDoctors>),
-    Staff(Vec<ReturnAppointmentsForStaff>)
-}
-
 #[derive(Validate, Deserialize, JsonSchema)]
 pub struct AppoinmentInformation {
     pub doctor_id       : uuid::Uuid,
@@ -147,6 +140,12 @@ pub async fn reschedule_appointment(
     }))
 }
 
+#[derive(Serialize, JsonSchema)]
+#[serde(untagged)]
+pub enum AppointmentsResponse {
+    Doctor(Vec<ReturnAppointmentsForDoctors>),
+    Staff(Vec<ReturnAppointmentsForStaff>)
+}
 
 #[derive(Deserialize, Serialize, JsonSchema)]
 pub struct ReturnAppointmentsForDoctors {

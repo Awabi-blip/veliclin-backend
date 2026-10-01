@@ -14,7 +14,7 @@ use database::db_driver::DatabaseDriver;
 // use auth::google_sso::{google_oauth_client, google_login, google_callback};
 use axum::{Extension, extract::Request, extract::State,
 middleware::{self,Next}, response::Response, Json};
-use crate::utils::{ApiError};
+use crate::utils::{ApiError, get_generel_login_cookie};
 use aide::{
     axum::{ApiRouter, IntoApiResponse},
     openapi::OpenApi,
@@ -32,7 +32,7 @@ use crate::handlers::patients::patient_routes;
 use crate::handlers::prescriptions::prescription_routes;
 use crate::handlers::staffs::staff_invitation_routes;
 use crate::auth::clerk::auth_routes;
-use tower_cookies::CookieManagerLayer;
+use tower_cookies::{CookieManagerLayer, Cookies, Cookie};
 use tower_http::cors::CorsLayer;
 use axum::http::{header, HeaderValue, Method};
 
@@ -122,13 +122,13 @@ async fn main() {
 
 async fn rate_limiter(
     State(vk_client): State<Client>,
-
+    cookies : Cookies,
     req:Request, 
     next:Next,
 
 ) -> Result<Response, ApiError> {
 
-    let ip = req
+    let user_ip = req
     .headers()
     .get("x-forwarded-for")
     .and_then(|v: &axum::http::HeaderValue| v.to_str().ok())
@@ -137,23 +137,29 @@ async fn rate_limiter(
     .unwrap_or("127.0.0.1")
     .to_owned(); 
 
-    let key = format!("rl:{ip}");
+    let user_id = get_generel_login_cookie(&cookies)?;
+
+    let ip_key = format!("rl:{user_ip}");
+    let id_key = format!("rl:id:{user_id}");
 
     let trx = vk_client.multi();
 
-    let _: () = trx.incr(&key)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    let _: () = trx.incr(&ip_key)
+    .await?;
+
+    let _: () = trx.incr(&id_key)
+    .await?;
     
-    let _: () = trx.expire(&key, 60, Some(ExpireOptions::NX))
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    let _: () = trx.expire(&ip_key, 60, Some(ExpireOptions::NX))
+    .await?;
 
-    let (value, _): (i64, i64) = trx.exec(false)
-    .await
-    .map_err(|_| ApiError::BadRequest("Rate limiter unavailble".to_string()))?;
+    let _: () = trx.expire(&id_key, 60, Some(ExpireOptions::NX))
+    .await?;
 
-    if value > 60 {
+    let (ip_value, id_value, _,_): (i64, i64, bool, bool) = trx.exec(false)
+    .await?;
+
+    if (ip_value > 60) || (id_value > 60) {
         return Err(ApiError::BadRequest("Too many requests".to_string()))
     }
 
