@@ -55,6 +55,9 @@ A patient's information is only visible to doctor that it has been added under t
 If the clinic's all_visibility is set to true, the patient initially is still added under a doctor's name, but all doctors
 can see the patients information
 
+## For API Testers:
+The Swagger UI is middleware protected which needs your IP and user_id to work, so if you dont have a user_id, it will throw an error. For testing the API, signup and login first!
+
 ## Why Rust?:
 Because I am a broke student who can't afford a huge server yet (the app is on t3 small on AWS).
 

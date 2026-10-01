@@ -335,7 +335,9 @@ pub enum ApiError {
     BadRequest(String),
     #[error("not found: {0}")]
     NotFound(String),
-    
+    #[error("too many requests")]
+    TooManyRequests,
+
     #[error("Internel Server Error:{0}")]
     InternalServerError(String),
     
@@ -371,7 +373,7 @@ impl IntoResponse for ApiError {
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-            
+            ApiError::TooManyRequests => (StatusCode::TOO_MANY_REQUESTS, "Too many requests".to_string()),
             ApiError::InternalServerError(err) => {
                 tracing::error!(error = ?err, "some weird bug");
                 (StatusCode::INTERNAL_SERVER_ERROR, err)},

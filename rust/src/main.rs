@@ -63,10 +63,16 @@ async fn main() {
 
     let mut api = OpenApi::default();
 
-    let app = ApiRouter::new()
+    let ip_only_routes = ApiRouter::new()
+    .merge(auth_routes())
+    .layer(middleware::from_fn_with_state(
+        vk_client.clone(),
+        rate_limiter_with_ip,
+    ));
+
+    let ip_and_id_routes = ApiRouter::new()
     .route("/docs", Swagger::new("/api.json").axum_route())
     .route("/api.json", get(serve_api))   // <-- was missing
-    .merge(auth_routes())
     .merge(profile_routes())
     .merge(clinics_routes().with_state(vk_client.clone()))  // supply Client state right here
     .merge(dashboard_routes().with_state(vk_client.clone()))
@@ -75,12 +81,16 @@ async fn main() {
     .merge(doctor_schedule_routes()) 
     .merge(patient_routes())
     .merge(prescription_routes())
-    .layer(Extension(db))
-    .layer(CookieManagerLayer::new())
     .layer(middleware::from_fn_with_state(
         vk_client.clone(),
-        rate_limiter,
-    ))
+        rate_limiter_with_ip_and_id,
+    ));
+
+    let app = ApiRouter::new()
+    .merge(ip_only_routes)
+    .merge(ip_and_id_routes)
+    .layer(Extension(db))
+    .layer(CookieManagerLayer::new())
     .layer(
         CorsLayer::new()
             .allow_origin(
@@ -107,9 +117,9 @@ async fn main() {
     //copy trait is just making a new reference to the heap
 
     let app = app
-        .finish_api(&mut api)
-        .layer(Extension(api))
-        .into_make_service();
+    .finish_api(&mut api)
+    .layer(Extension(api))
+    .into_make_service();
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
     .await
@@ -120,7 +130,46 @@ async fn main() {
     .expect("server could not start!");
 }
 
-async fn rate_limiter(
+async fn rate_limiter_with_ip(
+    State(vk_client): State<Client>,
+    req:Request, 
+    next:Next,
+
+) -> Result<Response, ApiError> {
+
+    let user_ip = req
+    .headers()
+    .get("x-forwarded-for")
+    .and_then(|v: &axum::http::HeaderValue| v.to_str().ok())
+    .and_then(|s| s.split(',').next())
+    .map(str::trim)
+    .unwrap_or("127.0.0.1")
+    .to_owned(); 
+
+    let ip_key = format!("rl:{user_ip}");
+
+    let trx = vk_client.multi();
+
+    let _: () = trx.incr(&ip_key)
+    .await?;
+
+    let _: () = trx.expire(&ip_key, 60, Some(ExpireOptions::NX))
+    .await?;
+
+    let (ip_value, _): (i64, bool) = trx.exec(false)
+    .await?;
+
+    if ip_value > 60 {
+        return Err(ApiError::TooManyRequests)
+    }
+
+    let response = next.run(req).await;
+
+    Ok(response)
+
+}
+
+async fn rate_limiter_with_ip_and_id(
     State(vk_client): State<Client>,
     cookies : Cookies,
     req:Request, 
@@ -160,7 +209,7 @@ async fn rate_limiter(
     .await?;
 
     if (ip_value > 60) || (id_value > 60) {
-        return Err(ApiError::BadRequest("Too many requests".to_string()))
+        return Err(ApiError::TooManyRequests)
     }
 
     let response = next.run(req).await;
