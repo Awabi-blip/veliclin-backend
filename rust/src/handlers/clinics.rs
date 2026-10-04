@@ -66,6 +66,9 @@ pub async fn create_clinic(
     body                         : Json<ClinicInformation>
 ) ->  Result<Redirect, ApiError> {
 
+    body.validate()
+    .map_err(|e| ApiError::BadRequest(e.to_string()))?;
+
     let user_id = get_user_id_for_invitation(&cookie)?;
 
     if body.clinic_name.is(Type::INAPPROPRIATE){
