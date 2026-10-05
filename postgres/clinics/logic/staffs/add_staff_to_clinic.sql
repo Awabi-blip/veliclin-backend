@@ -6,6 +6,7 @@
 select * from profiles;
 select * from app_users;
 
+
 CALL send_invitations(
 'darkdaredevil20@gmail.com',
 'Doctor'::e_staff_role);
@@ -26,7 +27,9 @@ DECLARE
 BEGIN
 
     if v_sender_id is NULL then
-        raise exception 'not found';
+    raise exception using
+        errcode = 'P2001',
+        message = 'you are unauthorised to do this action';
     end if;
 
     --now fetch owner_id
@@ -35,7 +38,9 @@ BEGIN
     where id = v_sender_id;
 
     if not found then
-        raise exception 'not found'; 
+    raise exception using
+        errcode = 'P2001',
+        message = 'you are unauthorised to do this action';       
     end if;
 
     select id into v_receiver_id
@@ -43,7 +48,9 @@ BEGIN
     where email = p_receiver_email;
 
     if not found then
-        raise exception 'not found';
+        raise exception using
+        errcode = 'P2001',
+        message = 'the person you are trying to add to your clinic is not registered';  
     end if;
 
     select clinic_id into v_clinic_id
@@ -57,7 +64,9 @@ BEGIN
         where owner_id = v_sender_id;
 
         if not found then 
-            raise exception 'not found';
+        raise exception using
+            errcode = 'P2001',
+            message = 'you are unauthorised to do this action';  
         end if;
 
     end if;
@@ -81,6 +90,11 @@ BEGIN
     
 END;
 $$ language plpgsql;
+
+
+
+
+
 
 
 CREATE INDEX idx_send_invitations ON staffs_in_clinics (

@@ -6,6 +6,7 @@ use axum::{
 use serde::{Serialize,Deserialize};
 use tower_cookies::{Cookies};
 use crate::database::db_driver::DatabaseDriver;
+use crate::utils::ApiError::Unauthorized;
 use crate::utils::{ApiError, ClinicType, StaffRole, get_user, get_user_id_for_invitation};
 use validator::ValidateEmail;
 
@@ -131,8 +132,20 @@ async fn view_invitations(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
 ) -> Result<Json<Vec<Invitations>>, ApiError> {
-    let user_id = get_user_id_for_invitation(&cookie)
-    .map_err(|_| ApiError::NotFound("user not found".to_string()))?;
+
+    let user_id = match get_user_id_for_invitation(&cookie) {
+        
+        Ok(user_id) => user_id,
+
+        Err(ApiError::Unauthorized) => {
+            match get_user(&cookie) {
+                Ok(user) => user.user_id,
+                Err(err) => return Err(err),
+            }
+        }
+
+        Err(err) => return Err(err),
+    };
 
     let mut conn = db.pool.acquire()
     .await

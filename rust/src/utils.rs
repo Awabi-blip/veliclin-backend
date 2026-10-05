@@ -262,7 +262,7 @@ pub fn get_user_id_for_invitation(cookies: &Cookies) -> Result<Uuid, ApiError> {
             &creds.jwt_decoding_key,
             &Validation::default(),
         )
-        .map_err(|_| ApiError::Unauthorized)?;
+    .map_err(|_| ApiError::InternalServerError("cookie decoding failed".to_string()))?;
 
     Ok(token_data.claims.user_id) 
 }

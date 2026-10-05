@@ -5,8 +5,16 @@ declare
     v_victim_role e_staff_role  := (select staff_role from staffs_in_clinics where id = v_victim_id);
 begin
 
-    if v_user is null or v_victim_role is null then
-        raise exception 'user or victim not found';
+    if v_user is null then
+    raise exception using
+        errcode = 'P2001',
+        message = 'you are unauthorised to do this action';  
+    end if;
+
+    if v_victim_role is null then
+        raise exception using
+        errcode = 'P2001',
+        message = 'staff to be removed does not exist';  
     end if;
 
     perform 1 from 
@@ -15,7 +23,10 @@ begin
 
     if not found then
         if v_victim_role = 'Manager'::e_staff_role then
-             raise exception 'action can not be performed';
+        
+        raise exception using
+            errcode = 'P2001',
+            message = 'non owners can not remove manager';  
         end if;
  
         perform 1 from
@@ -24,7 +35,9 @@ begin
         and   staff_id   =  v_user;
         
         if not found then 
-            raise exception 'unauthorised';
+        raise exception using
+            errcode = 'P2001',
+            message = 'you are not allowed to remove anyone';  
         end if;
     
     end if;
