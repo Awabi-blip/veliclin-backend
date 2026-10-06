@@ -1,3 +1,4 @@
+-- Active: 1786733926332@@127.0.0.1@5433
 --create a function to add staff to clinic
 --first check that the auth.uid person is the owner of the clinic
 --then let them send inviations to people, upon invitation accept/reject invitation
@@ -12,6 +13,8 @@ CALL send_invitations(
 'Doctor'::e_staff_role);
 
 set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+
+
 
 
 CREATE OR REPLACE PROCEDURE send_invitations(
@@ -94,9 +97,6 @@ $$ language plpgsql;
 
 
 
-
-
-
 CREATE INDEX idx_send_invitations ON staffs_in_clinics (
     staff_id
 ) INCLUDE (clinic_id);
@@ -115,6 +115,7 @@ where invitation_id = 4
 and   receiver_id   = '01a07759-3b0e-7c2a-980d-fe8ee75586d3'::UUID;
 
 select * from invitations;
+
 
 
 CREATE OR REPLACE PROCEDURE accept_invitations(f_invitation_id INT)

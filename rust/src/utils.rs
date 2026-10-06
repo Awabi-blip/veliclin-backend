@@ -654,3 +654,22 @@ pub fn match_auth(
     Ok(redirect_page)
 
 }
+
+pub fn clear_cookies(
+    cookie : Cookies
+) {
+
+    for name in [
+        "SessionCookie",
+        "PaymentCookie",
+        "InvitationCookie",
+        "ProfileBuildCookie",
+        "GeneralLoginCookie",
+    ] {
+        cookie.remove(
+            Cookie::build(name)
+                .path("/")
+                .build()
+        );
+    }
+}

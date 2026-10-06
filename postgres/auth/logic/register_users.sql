@@ -52,6 +52,8 @@ $$ LANGUAGE plpgsql;
 select * from profiles;
 select * from determine_auth_response('01a03e8a-e7fc-7a52-b510-a7dc3b784923'::UUID)
 
+select * from determine_auth_response('01a07759-3b0e-7c2a-980d-fe8ee75586d3')
+
 CREATE OR REPLACE FUNCTION determine_auth_response(
     f_user_id UUID
 ) returns JSONB AS $$

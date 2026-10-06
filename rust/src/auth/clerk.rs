@@ -1,5 +1,5 @@
 use crate::database::db_driver::DatabaseDriver;
-use crate::utils::{get_permenant_app_data, AuthResponse, match_auth};
+use crate::utils::{get_permenant_app_data, AuthResponse, match_auth, clear_cookies};
 use axum::{Extension, Json, response::Redirect,};
 use jsonwebtoken::{decode};
 use serde::Deserialize;
@@ -12,6 +12,7 @@ use tracing;
 pub fn auth_routes() -> ApiRouter {
     ApiRouter::new()
     .route("/auth/clerk/callback", post(clerk_callback))
+    .route("/logout", post(logout))
 }
 
 #[derive(Deserialize)]
@@ -36,26 +37,24 @@ pub struct ClerkClaims {
     sts: Option<String>,
 }
 
+pub async fn logout(
+    cookie : Cookies
+) -> Result<Redirect, Redirect> {
+    
+    clear_cookies(cookie);
+
+    Ok(Redirect::to("/"))
+    
+    
+}
+
+
 #[tracing::instrument(skip(db, cookie, payload), err(Debug))]
 pub async fn clerk_callback(
     Extension(db) : Extension<DatabaseDriver>,
     cookie      : Cookies,
     Json(payload) : Json<AuthPayload>,
 ) -> Result<Redirect, Redirect> {
-
-    for name in [
-        "SessionCookie",
-        "PaymentCookie",
-        "InvitationCookie",
-        "ProfileBuildCookie",
-        "GeneralLoginCookie",
-    ] {
-        cookie.remove(
-            Cookie::build(name)
-                .path("/")
-                .build()
-        );
-    }
 
     let app_data = get_permenant_app_data();
 
@@ -97,7 +96,7 @@ pub async fn clerk_callback(
         .claims
         .full_name
         .unwrap_or_else(|| "User".to_string());
-
+    
     let sqlx::types::Json(auth): sqlx::types::Json<AuthResponse> = sqlx::query_scalar!(
         r#"SELECT register_users($1, $2, $3) AS "response!: sqlx::types::Json<AuthResponse>""#,
         &token_data.claims.sub,
@@ -111,7 +110,8 @@ pub async fn clerk_callback(
         Redirect::to("/login?error=db_error")
     })?;
 
-    
+    clear_cookies(cookie.clone());
+
     let redirect_page = match_auth(auth, &cookie)
     .map_err(|_| Redirect::to("/login?error=internal_error"))?;
 
