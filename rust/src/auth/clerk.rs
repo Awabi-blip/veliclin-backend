@@ -41,10 +41,9 @@ pub async fn logout(
     cookie : Cookies
 ) -> Result<Redirect, Redirect> {
     
-    clear_cookies(cookie);
+    clear_cookies(&cookie);
 
     Ok(Redirect::to("/"))
-    
     
 }
 
@@ -110,7 +109,7 @@ pub async fn clerk_callback(
         Redirect::to("/login?error=db_error")
     })?;
 
-    clear_cookies(cookie.clone());
+    clear_cookies(&cookie);
 
     let redirect_page = match_auth(auth, &cookie)
     .map_err(|_| Redirect::to("/login?error=internal_error"))?;

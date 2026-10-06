@@ -436,7 +436,7 @@ pub fn match_auth(
     AuthResponse::ProfileBuild { id } => {
         let expiry: u64 = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .map_err(|_| ApiError::InternalServerError("time fetch failed, internel server error, it is not your fault, please notify support team.".to_string()))?
         .as_secs()
         + 60 * 60 * 24;
 
@@ -448,7 +448,7 @@ pub fn match_auth(
         },
         &app_data.jwt_encoding_key,
         )
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .map_err(|_| ApiError::InternalServerError("time fetch failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
         let mut cookie = Cookie::new("ProfileBuildCookie", token);
         cookie.set_path("/");
@@ -466,7 +466,7 @@ pub fn match_auth(
             },
             &app_data.jwt_encoding_key,
         )
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
         let mut general_cookie =  Cookie::new("GeneralLoginCookie", general_token);
         
@@ -497,7 +497,7 @@ pub fn match_auth(
 
             let expiry: u64 = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .map_err(|_| ApiError::InternalServerError("time fetch failed, internel server error, it is not your fault, please notify support team.".to_string()))?
             .as_secs()
             + 60 * 60 * duration;
             
@@ -512,7 +512,7 @@ pub fn match_auth(
             },
             &app_data.jwt_encoding_key,
             )
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
 
             let mut cookie = Cookie::new("SessionCookie", token);
@@ -531,7 +531,7 @@ pub fn match_auth(
                 },
                 &app_data.jwt_encoding_key,
             )
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
             let mut general_cookie =  Cookie::new("GeneralLoginCookie", general_token);
             
@@ -547,7 +547,7 @@ pub fn match_auth(
         } else { 
             let expiry: u64 = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .map_err(|_| ApiError::InternalServerError("time fetch failed, internel server error, it is not your fault, please notify support team.".to_string()))?
             .as_secs()
             + 60 * 60 * 8;
             let token = encode(
@@ -559,7 +559,7 @@ pub fn match_auth(
                 },
                 &app_data.jwt_encoding_key,
             )
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
 
             let mut cookie = Cookie::new("PaymentCookie", token);
@@ -578,7 +578,7 @@ pub fn match_auth(
                 },
                 &app_data.jwt_encoding_key,
             )
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+            .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
             let mut general_cookie =  Cookie::new("GeneralLoginCookie", general_token);
             
@@ -600,7 +600,7 @@ pub fn match_auth(
     AuthResponse::Invitation { id, onboarded } => {
         let expiry: u64 = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .map_err(|_| ApiError::InternalServerError("time fetch failed, internel server error, it is not your fault, please notify support team.".to_string()))?
             .as_secs()
             + 60 * 60 * 24 * 7;
 
@@ -613,7 +613,7 @@ pub fn match_auth(
             },
             &app_data.jwt_encoding_key,
         )
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
         let mut cookie = Cookie::new("InvitationCookie", token);
         cookie.set_path("/");
@@ -631,7 +631,7 @@ pub fn match_auth(
             },
             &app_data.jwt_encoding_key,
         )
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .map_err(|_| ApiError::InternalServerError("cookie encode failed, internel server error, it is not your fault, please notify support team.".to_string()))?;
 
         let mut general_cookie =  Cookie::new("GeneralLoginCookie", general_token);
         
@@ -656,7 +656,7 @@ pub fn match_auth(
 }
 
 pub fn clear_cookies(
-    cookie : Cookies
+    cookie : &Cookies
 ) {
 
     for name in [
