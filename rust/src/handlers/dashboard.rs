@@ -13,11 +13,11 @@ use aide::axum::routing::{get};
 use fred::types::Expiration;
 use aide::NoApi;
 use fred::prelude::*;
-use tower_http::trace::TraceLayer;
 
 pub fn dashboard_routes() -> ApiRouter<Client> {
     ApiRouter::new()
         .api_route("/dashboard", get(load_dashboard))
+        
 }   
 
 #[derive(Serialize, JsonSchema)]

@@ -207,3 +207,5 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+select * from appointments;

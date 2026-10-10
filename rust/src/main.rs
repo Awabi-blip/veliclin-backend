@@ -35,6 +35,7 @@ use crate::auth::clerk::auth_routes;
 use tower_cookies::{CookieManagerLayer, Cookies, Cookie};
 use tower_http::cors::CorsLayer;
 use axum::http::{header, HeaderValue, Method};
+use tower_http::trace::TraceLayer;
 
 
 async fn serve_api(Extension(api): Extension<OpenApi>) -> impl IntoApiResponse {
@@ -91,6 +92,7 @@ async fn main() {
     .merge(ip_and_id_routes)
     .layer(Extension(db))
     .layer(CookieManagerLayer::new())
+    .layer(TraceLayer::new_for_http())
     .layer(
         CorsLayer::new()
             .allow_origin(

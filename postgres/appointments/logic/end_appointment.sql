@@ -1,4 +1,10 @@
--- Active: 1776099699305@@127.0.0.1@5432@cliniqo
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
+set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+set role app;
+set role postgres;
+call end_appointment(20);
+select * from appointments join patients_in_clinics on appointments.patient_id = patients_in_clinics.patient_id;
+select * from appointments;
 create or replace procedure end_appointment(
     p_appointment_id BIGINT
 )
@@ -37,8 +43,8 @@ begin
     end if;
     
     update appointments
-    set  "status" = 'On_going'::e_appointment_status
+    set  "status" = 'Completed'::e_appointment_status
     where appointment_id = p_appointment_id;
 
 end;
-$$ language plpgsql;
+$$ language plpgsql

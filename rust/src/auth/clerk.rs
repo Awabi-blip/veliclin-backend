@@ -52,7 +52,7 @@ pub async fn logout(
 pub async fn clerk_callback(
     Extension(db) : Extension<DatabaseDriver>,
     cookie      : Cookies,
-    Json(payload) : Json<AuthPayload>,
+    Json(payload)    : Json<AuthPayload>,
 ) -> Result<Redirect, Redirect> {
 
     let app_data = get_permenant_app_data();
