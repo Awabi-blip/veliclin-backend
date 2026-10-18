@@ -1,4 +1,4 @@
--- Active: 1778842009804@@127.0.0.1@5432@cliniqo
+-- Active: 1786733926332@@127.0.0.1@5433
 CREATE TABLE IF NOT EXISTS patient_prescriptions(
     "id" BIGSERIAL,
     "appointment_id" BIGSERIAL,
@@ -19,10 +19,24 @@ CREATE TABLE IF NOT EXISTS patient_prescriptions(
     FOREIGN KEY ("doctor_id", "doctor_role", "doctor_clinic_id") REFERENCES staffs_in_clinics("staff_id", "staff_role", "clinic_id"),
     FOREIGN KEY ("appointment_id") REFERENCES appointments("appointment_id")
 );
+
+ALTER TABLE patient_prescriptions DISABLE ROW LEVEL SECURITY;
+
+
+GRANT USAGE ON SCHEMA "public" TO app;
+GRANT SELECT ON ALL TABLES IN SCHEMA "public" TO app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT SELECT ON TABLES TO app;
+
+select * from view_prescriptions where patient_id = '019fa632-8b75-7d11-bd7b-08433bf0f0d7'::UUID;
+set role postgres;
+grant usage on schema "public" to app;
+set role app;
+
 CREATE VIEW view_prescriptions
 with (security_invoker = true) AS
 SELECT 
 pp.id as prescription_id,
+pp.patient_id as patient_id,
 CONCAT(pic.first_name, ' ', pic.last_name) AS patient_name,
 CONCAT(profiles.first_name, ' ', profiles.last_name) AS doctor_name,
 pp.medication AS medication,

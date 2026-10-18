@@ -17,7 +17,6 @@ use schemars::JsonSchema;
 use crate::utils::{get_user};
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get, post, patch, delete};
-use tower_http::trace::TraceLayer;
 
 // in handlers/appointments.rs
 pub fn appointment_routes() -> ApiRouter {

@@ -7,8 +7,10 @@ declare
                      = v_user_id);
 begin
     
-    if v_user_id is null or v_clinic_id is null
-        then raise exception 'unauthorized to commit this action';
+    if v_user_id is null or v_clinic_id is null then
+       raise exception using
+        errcode = 'P2001',
+        message = 'please sign in and try again later!';
     end if;
 
     delete from clinics

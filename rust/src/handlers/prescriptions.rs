@@ -21,13 +21,14 @@ use serde_json::Value;
 use aide::NoApi;
 use schemars::JsonSchema;
 use aide::axum::ApiRouter;
-use aide::axum::routing::{post, patch};
+use aide::axum::routing::{post, patch, get};
 use tower_http::trace::TraceLayer;
 
 
 pub fn prescription_routes() -> ApiRouter {
     ApiRouter::new()
-        .api_route("/prescriptions", post(add_prescription).get(view_prescriptions))
+        .api_route("/prescriptions", post(add_prescription).get(view_prescriptions_all))
+        .api_route("/prescriptions{patient_id}", get(view_prescriptions_per_patient))
         .api_route("/prescriptions/{prescription_id}", patch(update_prescription))
         .layer(TraceLayer::new_for_http())
 }
@@ -91,8 +92,7 @@ pub async fn add_prescription (
         info.metadata
     )
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -133,27 +133,24 @@ pub struct PrescriptionFilter {
 }
 
 #[tracing::instrument(skip(db, cookie), err(Debug))]
-pub async fn view_prescriptions(
+pub async fn view_prescriptions_all(
     Extension(db): Extension<DatabaseDriver>,
     NoApi(cookie)       : NoApi<Cookies>,
     Query(filter): Query<PrescriptionFilter>,
 
 ) -> Result<Json<Vec<PrescriptionRecord>>, ApiError> {
 
-    let user = get_user(&cookie)
-    .map_err(|_| ApiError::Unauthorized)?;
+    let user = get_user(&cookie)?;
 
     if user.user_role != Doctor {
         return Err(ApiError::Unauthorized)
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let prescriptions = match filter.status {
         PrescriptionStatus::OnGoing => {
@@ -193,13 +190,80 @@ pub async fn view_prescriptions(
                 WHERE end_date <= CURRENT_DATE"#
             )
             .fetch_all(&mut *conn)
-            .await
-            .map_err(|e| ApiError::InternalServerError(e.to_string()))?
+            .await?
         },
     };
 
     Ok(Json(prescriptions))
 }
+
+#[tracing::instrument(skip(db,cookie), err(Debug))]
+pub async fn view_prescriptions_per_patient (
+    Extension(db)  : Extension<DatabaseDriver>,
+    NoApi(cookie) : NoApi<Cookies>,
+    Path(patient_id) : Path<uuid::Uuid>,
+    Query(filter)    : Query<PrescriptionFilter>
+) -> Result<Json<Vec<PrescriptionRecord>>, ApiError>
+{   
+
+    let user = get_user(&cookie)?;
+
+    if user.user_role != Doctor {
+        return Err(ApiError::Unauthorized)
+    }
+
+    let mut conn = db.pool.acquire()
+    .await?;
+
+    db.set_rls(&mut conn, user.user_id)
+    .await?;
+
+    let prescriptions = match filter.status {
+        PrescriptionStatus::OnGoing => {
+            sqlx::query_as!(
+                PrescriptionRecord,
+                r#"SELECT 
+                    prescription_id  as  "prescription_id!",
+                    patient_name     as  "patient_name!",
+                    doctor_name      as  "doctor_name!",
+                    medication       as  "medication!",
+                    potency          as  "potency!",
+                    frequency        as  "frequency!",
+                    start_date       as  "start_date!",
+                    end_date         as  "end_date!",
+                    meta_data
+                FROM view_prescriptions 
+                WHERE end_date > CURRENT_DATE
+                AND patient_id =  $1"#, patient_id
+            )
+            .fetch_all(&mut *conn)
+            .await?
+        },
+        PrescriptionStatus::Completed => {
+            sqlx::query_as!(
+                PrescriptionRecord,
+                r#"SELECT 
+                    prescription_id as "prescription_id!",
+                    patient_name as "patient_name!",
+                    doctor_name as "doctor_name!",
+                    medication as "medication!",
+                    potency as "potency!",
+                    frequency as "frequency!",
+                    start_date as "start_date!",
+                    end_date as "end_date!",
+                    meta_data
+                FROM view_prescriptions 
+                WHERE end_date <= CURRENT_DATE
+                AND patient_id = $1
+                "#, patient_id
+            )
+            .fetch_all(&mut *conn)
+            .await?
+        },
+    };
+    Ok(Json(prescriptions))
+}
+
 
 #[derive(Deserialize, FromRow, JsonSchema)]
 pub struct UpdatePrescription {

@@ -35,9 +35,11 @@ DECLARE
     v_response JSONB;
 BEGIN
 
-    IF v_owner_id IS NULL 
-        THEN RAISE EXCEPTION 'Action can not be commited, Please try again later.';
-    END IF;
+    if v_owner_id is null then
+        raise exception using
+        errcode = 'P2001',
+        message = 'please sign in and try again!';
+    end if;
 
     v_expires_at := (CURRENT_DATE + INTERVAL '14 days');
 
