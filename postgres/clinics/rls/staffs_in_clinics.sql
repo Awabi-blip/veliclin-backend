@@ -19,5 +19,18 @@ on staffs_in_clinics
 for select
 using (
     clinic_id in (select my_clinic_ids())
+    or 
+    exists ()
 );
 
+create policy owner_see_all_staff_clinic_ops 
+on staffs_in_clinics
+for select
+using (
+   exists (select 1 from clinics where 
+   clinics.owner_id = NULLIF(current_setting('myapp.user_id', true), '')::uuid
+   and 
+   clinics.clinic_id = staffs_in_clinics.clinic_id)
+);
+
+select * from clinics;

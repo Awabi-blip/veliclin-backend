@@ -1,3 +1,4 @@
+# auth managed by RLS
 create or replace procedure add_patients_data (
     p_patient_id  uuid,
     p_neurotype   e_neurotype,
@@ -17,7 +18,9 @@ begin
     where  patient_id = p_patient_id;
 
     if not found
-        then raise exception 'the patient does not exist';
+        then raise exception using
+        errcode = 'P2001',
+        message = 'the patient does not exist';
     end if;
 
     insert into patients_information(
@@ -33,9 +36,7 @@ begin
         blood_type = excluded.blood_type,
         height_cm  = excluded.height_cm,
         weight_kg  = excluded.weight_kg,
-        note       = excluded.note
-    ;
-
+        note       = excluded.note;
 
 end
 $$ language plpgsql;

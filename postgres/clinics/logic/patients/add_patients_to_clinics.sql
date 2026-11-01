@@ -58,10 +58,15 @@ BEGIN
 
     -- need to validate that doctor belongs to the same clinic as staff.
     if v_valid_clinic_id is null or v_valid_doctor_clinic_id is null 
-    then raise exception 'unauthorised';
+    then raise exception using
+        errcode = 'P2001',
+        message = 'unauthorised';
     end if;
 
-    if v_valid_clinic_id != v_valid_doctor_clinic_id then raise exception 'bad request';
+    if v_valid_clinic_id != v_valid_doctor_clinic_id 
+    then raise exception using
+        errcode = 'P2001',
+        message = 'the doctor and the staff are not in the same clinic';
     end if;
     
     INSERT INTO patients_in_clinics (

@@ -51,7 +51,7 @@ pub async fn logout(
 #[tracing::instrument(skip(db, cookie, payload), err(Debug))]
 pub async fn clerk_callback(
     Extension(db) : Extension<DatabaseDriver>,
-    cookie      : Cookies,
+    cookie        : Cookies,
     Json(payload)    : Json<AuthPayload>,
 ) -> Result<Redirect, Redirect> {
 

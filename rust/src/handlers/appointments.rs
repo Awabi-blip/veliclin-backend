@@ -82,7 +82,8 @@ pub async fn create_appointment(
     ).execute(&mut *conn)
     .await?;
 
-    
+    drop(conn);
+
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
     }))
@@ -132,6 +133,8 @@ pub async fn reschedule_appointment(
         body.meeting_link
     ).execute(&mut *conn)
     .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -249,9 +252,12 @@ pub async fn view_appointments(
             
             Ok(Json(AppointmentsResponse::Staff(p)))
         }
-        _ => return Err(ApiError::Unauthorized) 
+        _ => {
+        drop(conn);
+        return Err(ApiError::Unauthorized) }
 
     }
+    
 
 
 }
@@ -283,6 +289,8 @@ pub async fn start_appointment(
     ).execute(&mut *conn)
     .await?;
 
+    drop(conn);
+
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
     }))
@@ -313,6 +321,7 @@ pub async fn end_appointment(
         r#"CALL end_appointment($1)"#, appointment_id
     ).execute(&mut *conn)
     .await?;
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

@@ -1,4 +1,5 @@
--- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
+-- Active: 1786733926332@@127.0.0.1@5433
+select * from app_users where email = 'greatsaiyan4@gmail.com';
 create or replace procedure add_data_to_appointment(
     p_appointment_id bigint,
     p_note           varchar(1000),
@@ -24,7 +25,9 @@ declare
 begin
     
     if v_valid_clinic_id is null then
-        raise exception 'unauthorised';
+        raise exception using
+        errcode = 'P2001',
+        message = 'unauthorised';
     end if;
 
     select patient_id, status 
@@ -46,8 +49,9 @@ begin
         where  patient_id = v_valid_patient_id
           and  clinic_id  = v_valid_clinic_id
           and  added_by   = v_doctor_id
-    ) then
-        raise exception 'patient not found';
+    ) then raise exception using
+        errcode = 'P2001',
+        message = 'patient not found';
     end if;
 
     insert into appointments_information 

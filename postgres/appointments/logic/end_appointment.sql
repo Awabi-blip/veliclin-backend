@@ -46,5 +46,6 @@ begin
     set  "status" = 'Completed'::e_appointment_status
     where appointment_id = p_appointment_id;
 
+
 end;
 $$ language plpgsql

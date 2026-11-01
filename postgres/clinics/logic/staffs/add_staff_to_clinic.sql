@@ -14,9 +14,6 @@ CALL send_invitations(
 
 set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
 
-
-
-
 CREATE OR REPLACE PROCEDURE send_invitations(
     p_receiver_email CITEXT,
     p_role_invited_for e_staff_role
@@ -116,8 +113,6 @@ and   receiver_id   = '01a07759-3b0e-7c2a-980d-fe8ee75586d3'::UUID;
 
 select * from invitations;
 
-
-
 CREATE OR REPLACE PROCEDURE accept_invitations(f_invitation_id INT)
 SECURITY DEFINER
 AS $$
@@ -132,14 +127,18 @@ BEGIN
     -- the schema enforces not null, so querying by null later would result in not found anyway
     -- better to prevent querying from happening
     if (v_accepter_id is null) or (v_accepter_email is null) or (v_clinic_id is null)
-        then raise exception 'Unauthorised';
+        then raise exception using
+        errcode = 'P2001',
+        message = 'Unauthorised';
     end if;
 
     if not exists (
         select 1 from invitations 
         where invitation_id = f_invitation_id
         and   receiver_id   = v_accepter_id
-    ) then raise exception 'the inv id does not belong to you';
+    ) then raise exception using
+        errcode = 'P2001',
+        message = 'the inv id does not belong to you';
     end if;
     
     INSERT INTO staffs_in_clinics(
@@ -160,7 +159,7 @@ BEGIN
     -- that means that the primary key invitation_id is associated to
     -- that record where accepter_email and accepter_id match
     -- i can delete by simply the id, but again, better to be explicit.
-    
+
     DELETE FROM invitations 
     WHERE invitation_id = f_invitation_id
     AND receiver_email  = v_accepter_email

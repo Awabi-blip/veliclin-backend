@@ -1,18 +1,30 @@
 -- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 --create a function to create a new clinic
 --in that function, make a new clinic, and make the owner the auth.uid() guy
-CALL create_new_clinic(
-    'Devil Trigger',
-    'Aesthetic_Clinic'::e_clinic_type,
-    'Temen-ni-gru',
-    'Highest Chamber, Demon World',
-    '330109121',
-    NULL,
-    NULL
-);
+
+
+select * from app_users;
+
+set myapp.user_id = '01a1901c-54a3-7224-b1b2-204d651d3f3a';
 
 SELECT current_setting('myapp.user_id');
-DROP PROCEDURE create_new_clinic;
+BEGIN;
+SELECT create_new_clinic(
+    'Downtown Health Clinic',          -- p_clinic_name (VARCHAR)
+    'Aesthetic_Clinic'::e_clinic_type,          -- p_clinic_type (ENUM e_clinic_type)
+    'New York',                        -- p_city (VARCHAR)
+    '123 Medical Way, Suite 400',       -- p_address (VARCHAR)
+    '+15551234567',                    -- p_contact_number (VARCHAR)
+    'https://example.com/banner.jpg',  -- p_banner_url (TEXT)
+    FALSE,                              -- p_all_visibility (BOOLEAN)
+    'America/New_York',                -- p_timezone (VARCHAR)
+    'Doctor'::e_staff_role              -- p_self_role (ENUM e_staff_role, optional)
+);
+
+-- Aborts any query taking longer than 5 seconds for this user
+ALTER ROLE app SET statement_timeout = '5s';
+ROLLBACK;
+COMMIT;
 
 set role postgres;
 

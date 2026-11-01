@@ -94,6 +94,8 @@ pub async fn add_prescription (
     .execute(&mut *conn)
     .await?;
 
+    drop(conn);
+
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
     }))
@@ -194,6 +196,8 @@ pub async fn view_prescriptions_all(
         },
     };
 
+    drop(conn);
+
     Ok(Json(prescriptions))
 }
 
@@ -261,6 +265,9 @@ pub async fn view_prescriptions_per_patient (
             .await?
         },
     };
+    
+    drop(conn);
+
     Ok(Json(prescriptions))
 }
 
@@ -325,9 +332,11 @@ pub async fn update_prescription(
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
     builder.push(" WHERE id = ").push_bind(prescription_id);
-    builder.build().execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    builder.build()
+    .execute(&mut *conn)
+    .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

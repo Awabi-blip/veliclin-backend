@@ -1,7 +1,6 @@
 alter table clinics enable row level security;
 
-
-create policy owners_and_staffs_view_clinics on clinics;
+create policy owners_and_staffs_view_clinics on clinics
 for select 
 using (
     owner_id = nullif(current_setting('myapp.user_id', true),
@@ -14,4 +13,6 @@ using (
         and sic.clinic_id = clinics.clinic_id
     )
 )
+
+
 

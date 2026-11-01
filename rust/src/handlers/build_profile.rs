@@ -84,6 +84,8 @@ pub async fn build_profile(
     .fetch_one(&mut *conn)
     .await?;
 
+    drop(conn);
+
     cookie.remove(
         Cookie::build("ProfileBuildCookie")
         .path("/")

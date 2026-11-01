@@ -57,19 +57,18 @@ pub async fn send_invitation(
     }
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     sqlx::query!("CALL send_invitations($1::citext, $2::e_staff_role)",
     body.receiver_email,
     body.role_invited_for as _)
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -96,16 +95,15 @@ pub async fn remove_staff_from_clinic(
     }
 
     db.set_rls(&mut conn, user.user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
     // Procedure Params:
     // remove_staff_from_clinics(v_victim_id UUID)
 
     sqlx::query!("CALL remove_staff_from_clinics($1)", staff_id)
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -148,12 +146,10 @@ async fn view_invitations(
     };
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     let rows = sqlx::query_as!(
         Invitations,
@@ -169,8 +165,10 @@ async fn view_invitations(
         "#
     )
     .fetch_all(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+    
+    drop(conn);
+
 
     Ok(Json(rows))
 }
@@ -220,11 +218,9 @@ async fn view_invitation(
         invitation_id
     )
     .fetch_one(&mut *conn)
-    .await
-    .map_err(|e| match e {
-        sqlx::Error::RowNotFound => ApiError::NotFound("invitation not found".to_string()),
-        e => ApiError::InternalServerError(e.to_string()),
-    })?;
+    .await?;
+
+    drop(conn);
 
     Ok(Json(row))
 }
@@ -240,18 +236,18 @@ async fn accept_invitation(
     .map_err(|_| ApiError::NotFound("user not found".to_string()))?;
 
     let mut conn = db.pool.acquire()
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
     db.set_rls(&mut conn, user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
 
-    sqlx::query!("CALL accept_invitations($1)",
-    invitation_id)
+    sqlx::query!(
+        "CALL accept_invitations($1)",
+        invitation_id)
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -273,9 +269,7 @@ async fn reject_invitation(
     .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
     db.set_rls(&mut conn, user_id)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-
+    .await?;
     // Procedure Parms:
     // create or replace procedure reject_invitations(
     //  f_invitation_id INT)
@@ -283,8 +277,9 @@ async fn reject_invitation(
     sqlx::query!("CALL reject_invitations($1)",
     invitation_id)
     .execute(&mut *conn)
-    .await
-    .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

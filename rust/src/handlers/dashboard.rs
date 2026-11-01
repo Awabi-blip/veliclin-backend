@@ -82,6 +82,8 @@ pub async fn load_dashboard(
     )
     .fetch_one(&mut *conn)
     .await?;
+    drop(conn);
+
 
     match vk.set::<(), _, _>(&key, result.to_string(), Some(Expiration::EX(300)), None, false)
     .await {

@@ -1,10 +1,14 @@
+-- Active: 1786733926332@@127.0.0.1@5433
 --current user should be staff in the clinic
 --doctor should exist in the same clinic with doctor role
 
-drop policy insert_patients_policy_with_doctor on patients_in_clinics;
+
+update app_users
+set email = 'awabzero34@gmail.com'
+where email = 'awabhero34@gmail.com';
 
 
-create policy insert_patients_policy_with_doctor 
+create policy staffs_insert_patients_in_clinics 
 on patients_in_clinics 
 for insert 
 with check (
@@ -19,10 +23,7 @@ with check (
 );
 
 
-drop policy select_patients_policy_with_doctor
-on patients_in_clinics;
-
-create policy select_patients_policy_with_doctor 
+create policy staffs_see_patients_in_clinics 
 on patients_in_clinics 
 for select 
 using (
@@ -37,10 +38,7 @@ using (
     )
 );
 
-drop policy update_patients_policy_with_doctor 
-on patients_in_clinics
-
-create policy update_patients_policy_with_doctor 
+create policy staffs_update_patients_in_clinics
 on patients_in_clinics
 for update 
 using (
@@ -54,10 +52,8 @@ using (
     )
 );
 
-drop policy delete_patients_policy_with_doctor 
-on patients_in_clinics;
 
-create policy delete_patients_policy_with_doctor 
+create policy staffs_delete_patients_in_clinics
 on patients_in_clinics
 for delete 
 using (
@@ -78,7 +74,6 @@ REVOKE CREATE ON SCHEMA public FROM app;
 
 select * from patients_in_clinics;
 select * from staffs_in_clinics;
-
 
 
 doctor_id = 019f8cbb-caf8-7fb4-99e4-88421e1167c2

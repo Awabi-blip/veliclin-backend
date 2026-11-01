@@ -162,7 +162,7 @@ async fn rate_limiter_with_ip(
     .await?;
 
     if ip_value > 60 {
-        return Err(ApiError::TooManyRequests)
+        return Err(ApiError::TooManyRequests(format!("IP: {user_ip}")))
     }
 
     let response = next.run(req).await;
@@ -211,7 +211,7 @@ async fn rate_limiter_with_ip_and_id(
     .await?;
 
     if (ip_value > 60) || (id_value > 60) {
-        return Err(ApiError::TooManyRequests)
+        return Err(ApiError::TooManyRequests(format!("IP:{user_ip}, ID:{user_id}")))
     }
 
     let response = next.run(req).await;

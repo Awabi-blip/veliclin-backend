@@ -85,7 +85,6 @@ async fn add_patients(
     let mut conn = db.pool.acquire()
     .await?;
 
-
     db.set_rls(&mut conn, user.user_id)
     .await?;
 
@@ -96,7 +95,9 @@ async fn add_patients(
     body.gender as Gender, body.email
     )
     .execute(&mut *conn)
-.await?;
+    .await?;
+
+    drop(conn);
 
 
     Ok(Json(SuccessResponse {
@@ -170,6 +171,8 @@ async fn update_patients(
     builder.build().execute(&mut *conn)
     .await?;
 
+    drop(conn);
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -236,6 +239,7 @@ async fn add_patients_information (
     .execute(&mut *conn)
     .await?;
 
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -285,6 +289,8 @@ async fn update_patients_information(
     builder.push(" WHERE patient_id = ").push_bind(patient_id);
     builder.build().execute(&mut *conn)
     .await?;
+
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -406,7 +412,10 @@ async fn view_patients(
         
         }
 
-        _ => return Err(ApiError::Unauthorized)
+        _ => {
+            drop(conn);
+            return Err(ApiError::Unauthorized)
+        }
     }
 }
 
@@ -473,7 +482,9 @@ async fn view_patient(
             Ok(Json(PatientResponse::Staff(p)))
         }
 
-        _ => Err(ApiError::Unauthorized)
+        _ => {
+            drop(conn);
+            return Err(ApiError::Unauthorized)}
     }
 }
 
@@ -503,6 +514,7 @@ async fn delete_patients(
     .execute(&mut *conn)
     .await?;
 
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

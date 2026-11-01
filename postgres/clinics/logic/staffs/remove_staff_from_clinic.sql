@@ -1,3 +1,4 @@
+-- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 create or replace procedure remove_staff_from_clinics(v_victim_id UUID)
 security definer as $$
 declare

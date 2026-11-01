@@ -4,8 +4,8 @@ set -euo pipefail
 KEY="$HOME/vault_decrypted/AWS/veliclin-key.pem"
 SERVER="ubuntu@3.67.137.46"
 
-echo "building"
-cargo build --releases
+# echo "building"
+# cargo build --releases
 
 echo "📤 Uploading..."
 scp -i "$KEY" \

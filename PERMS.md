@@ -1,0 +1,5 @@
+Owner:
+send_invitations
+view_staffs_in_clinics
+create_new_clinic
+delete_existing_clinic

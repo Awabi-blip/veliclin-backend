@@ -67,6 +67,8 @@ pub async fn add_doctor_schedule(
         body.time_shift_ends
     ).execute(&mut *conn)
     .await?;
+    drop(conn);
+
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()
@@ -118,6 +120,7 @@ pub async fn view_doctors_schedule(
         doctor_id
     ).fetch_all(&mut *conn)
     .await?;
+    drop(conn);
 
     Ok(Json(rows))
 }
@@ -153,6 +156,8 @@ pub async fn delete_doctors_schedule(
         body.schedule_id, body.delete_appointments
     ).execute(&mut *conn)
     .await?;
+    
+    drop(conn);
 
     Ok(Json(SuccessResponse {
         message: "Success".to_string()

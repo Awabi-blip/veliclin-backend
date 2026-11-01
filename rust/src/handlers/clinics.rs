@@ -66,6 +66,8 @@ pub async fn create_clinic(
     body                         : Json<ClinicInformation>
 ) ->  Result<Redirect, ApiError> {
 
+    tracing::info!("inside create clinic handler");
+    
     body.validate()
     .map_err(|e| ApiError::BadRequest(e.to_string()))?;
 
@@ -100,6 +102,8 @@ pub async fn create_clinic(
     )
     .fetch_one(&mut *conn)
     .await?;
+
+    drop(conn);
                                         
     let redirect_page = match_auth(auth, &cookie)?;
     
@@ -273,15 +277,20 @@ async fn create_otp_delete_clinic(
     db.set_rls(&mut conn, user.user_id)
     .await?;
 
-    let cf = sqlx::query_as!(
+    let cf = {
+    
+    let cf =sqlx::query_as!(
         ConfirmationAnalysis,
         r#"SELECT app_users.email as email FROM app_users
         JOIN clinics ON app_users.id = clinics.owner_id
-        WHERE id = $1"#,
+        WHERE clinics.owner_id = $1"#,
         user.user_id
     )
     .fetch_one(&mut *conn)
     .await?;
+    cf
+    };
+
     let resend = &app_data.resend;
 
     let from = "Veliclin <no-reply@veliclin.com>";
@@ -350,15 +359,22 @@ pub async fn enter_otp_delete_clinic(
         return Err(ApiError::BadRequest("The code does not match".to_string()))
     }
 
+    let _ = {
+    
     let mut conn = db.pool.acquire()
     .await?;
 
     db.set_rls(&mut conn, user.user_id)
     .await?;
-
+    
     sqlx::query!(
         "CALL delete_clinics()"
     ).execute(&mut *conn)
+    .await?
+    
+    };
+
+    let _: usize = vk.del(&key)
     .await?;
 
     Ok(Json(SuccessResponse {
