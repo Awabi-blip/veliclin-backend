@@ -1,4 +1,6 @@
 # auth managed by rls
+
+# delete clinic rls handled by RLS
 create or replace procedure delete_clinics(
 )
 as $$

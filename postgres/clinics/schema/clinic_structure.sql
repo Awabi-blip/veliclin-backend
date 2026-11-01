@@ -76,32 +76,6 @@ FOR EACH ROW
 EXECUTE FUNCTION is_valid_timezone();
 
 
-CREATE TYPE e_staff_role AS ENUM('Doctor', 'Nurse', 'Manager', 'Receptionist');
-CREATE TABLE IF NOT EXISTS staffs_in_clinics (
-    "sic_id"     SERIAL PRIMARY KEY
-    "staff_id"   UUID NOT NULL,
-    "clinic_id"  UUID NOT NULL,
-    "staff_role" e_staff_role NOT NULL,
-    "is_active"  BOOLEAN NOT NULL DEFAULT TRUE,
-    UNIQUE("staff_id", "clinic_id", "staff_role"),
-    UNIQUE("staff_id", "clinic_id"),
-    PRIMARY KEY ("sic_id"), -- because one guy can only be staff in one clinic at a time
-    FOREIGN KEY ("staff_id") REFERENCES profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY ("clinic_id") REFERENCES clinics("clinic_id") ON DELETE CASCADE
-);
-
-CREATE unique index ON staffs_in_clinics ("staff_id")
-WHERE is_active = TRUE
-
-ALTER TABLE staffs_in_clinics
-    DROP CONSTRAINT staffs_in_clinics_pkey;
-
-ALTER TABLE staffs_in_clinics
-    ADD COLUMN sic_id SERIAL PRIMARY KEY;
-
-ALTER TABLE staffs_in_clinics
-ADD CONSTRAINT uq_staff_role UNIQUE (staff_id, staff_role);
-
 CREATE TABLE IF NOT EXISTS referrals (
     "id" BIGSERIAL,
     "patient_id" UUID NOT NULL,
@@ -168,58 +142,9 @@ CREATE TABLE IF NOT EXISTS patients_information (
     ON DELETE CASCADE
 );
 
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO app;
-
-drop view view_patients_as_doctors;
---create a view for returning patients
-create view view_patients_as_doctors
-with (security_invoker = true) as
-select 
-    pic.patient_id        as patient_id,
-    concat(pic.first_name, ' ', 
-    pic.last_name)        as full_name,
-    pic.contact_number      as phone_number,
-    pic.email             as email,
-    pic.gender            as gender,
-    pin.neurotype         as neurotype,
-    pin.blood_type        as blood_type,
-    pin.height_cm         as height_cm,
-    pin.weight_kg         as weight_kg,
-    pin.note              as note
-from      patients_in_clinics  as pic
-left join patients_information as pin
-on   pic.patient_id       = pin.patient_id;
-
-
-select * from profiles;
-
-set role postgres;
-set role app;
 set myapp.user_id = '01a0d811-cd16-7437-b1da-8966faec33c4';
 
-select * from invitations
 
-select * from app_users;
-
-select * from profiles join staffs_in_clinics on profiles.id = staffs_in_clinics.staff_id
-
-select * from view_patients_as_doctors;
-
-
-
-create view view_patients_as_staff
-with (security_invoker = true) as
-select 
-    pic.patient_id        as patient_id,
-    concat(pic.first_name, ' ', 
-    pic.last_name)        as full_name,
-    pic.contact_number      as phone_number,
-    pic.email             as email,
-    pic.gender            as gender
-from patients_in_clinics  as pic;
-
-drop view view_patients_as_staff;
-set role postgres;
 
 ALTER TABLE patients_in_clinics
 ADD COLUMN "adder_role" e_staff_role NOT NULL CHECK ("adder_role" = 'Doctor'::e_staff_role),

@@ -14,6 +14,7 @@ CALL send_invitations(
 
 set myapp.user_id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
 
+# does not really need RLS
 CREATE OR REPLACE PROCEDURE send_invitations(
     p_receiver_email CITEXT,
     p_role_invited_for e_staff_role

@@ -438,6 +438,12 @@ pub fn match_auth(
 
     let redirect_page: String;
 
+    cookies.remove(
+        Cookie::build("GeneralLoginCookie")
+        .path("/")
+        .build()
+    );
+
     let app_data = get_permenant_app_data();
 
     match auth {

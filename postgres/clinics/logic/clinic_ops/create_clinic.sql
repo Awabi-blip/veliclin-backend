@@ -2,7 +2,6 @@
 --create a function to create a new clinic
 --in that function, make a new clinic, and make the owner the auth.uid() guy
 
-
 select * from app_users;
 
 set myapp.user_id = '01a1901c-54a3-7224-b1b2-204d651d3f3a';
@@ -21,13 +20,17 @@ SELECT create_new_clinic(
     'Doctor'::e_staff_role              -- p_self_role (ENUM e_staff_role, optional)
 );
 
--- Aborts any query taking longer than 5 seconds for this user
-ALTER ROLE app SET statement_timeout = '5s';
-ROLLBACK;
-COMMIT;
+SELECT 
+    c.relname AS table_name,
+    c.relrowsecurity AS rls_enabled,
+    c.relforcerowsecurity AS rls_forced_for_owner
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relname = 'clinics'
 
-set role postgres;
 
+
+"""AUTH"""
 CREATE OR REPLACE FUNCTION create_new_clinic(
     p_clinic_name VARCHAR(100),
     p_clinic_type e_clinic_type,
