@@ -145,7 +145,6 @@ CREATE TABLE IF NOT EXISTS patients_information (
 set myapp.user_id = '01a0d811-cd16-7437-b1da-8966faec33c4';
 
 
-
 ALTER TABLE patients_in_clinics
 ADD COLUMN "adder_role" e_staff_role NOT NULL CHECK ("adder_role" = 'Doctor'::e_staff_role),
 ADD UNIQUE ("patient_id", "clinic_id", "added_by"),

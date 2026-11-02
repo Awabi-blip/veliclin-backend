@@ -1,9 +1,11 @@
 -- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
+select * from staffs_in_clinics;
 create or replace procedure remove_staff_from_clinics(v_victim_id UUID)
 security definer as $$
 declare
-    v_user uuid := current_setting('myapp.user_id')::uuid;
-    v_victim_role e_staff_role  := (select staff_role from staffs_in_clinics where id = v_victim_id);
+    v_user              uuid := current_setting('myapp.user_id')::uuid;
+    v_victim_role       e_staff_role;
+    v_victim_clinic_id  uuid;
 begin
 
     if v_user is null then
@@ -12,7 +14,11 @@ begin
         message = 'you are unauthorised to do this action';  
     end if;
 
-    if v_victim_role is null then
+    select staff_role, clinic_id 
+    into v_victim_role, v_victim_clinic_id
+    from staffs_in_clinics where staff_id = v_victim_id;
+
+    if (v_victim_role is null) or (v_victim_clinic_id is null) then
         raise exception using
         errcode = 'P2001',
         message = 'staff to be removed does not exist';  
@@ -20,7 +26,8 @@ begin
 
     perform 1 from 
     clinics
-    where owner_id = v_user;
+    where owner_id  = v_user
+    and   clinic_id = v_victim_clinic_id;
 
     if not found then
         if v_victim_role = 'Manager'::e_staff_role then
@@ -33,7 +40,8 @@ begin
         perform 1 from
         staffs_in_clinics
         where staff_role = 'Manager'::e_staff_role
-        and   staff_id   =  v_user;
+        and   staff_id   =  v_user
+        and   clinic_id  =  v_victim_clinic_id; 
         
         if not found then 
         raise exception using
