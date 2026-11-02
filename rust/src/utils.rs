@@ -534,7 +534,7 @@ pub fn match_auth(
             cookie.set_http_only(true);
             cookie.set_secure(true);
             cookie.set_same_site(SameSite::Lax);
-            cookie.set_max_age(Duration::hours(8));
+            cookie.set_max_age(Duration::hours(duration.clone() as i64));
             cookies.add(cookie);
 
             let general_token: String = encode(
@@ -553,7 +553,7 @@ pub fn match_auth(
             general_cookie.set_http_only(true);
             general_cookie.set_secure(true);
             general_cookie.set_same_site(SameSite::Lax);
-            general_cookie.set_max_age(Duration::hours(24));
+            general_cookie.set_max_age(Duration::hours(duration.clone() as i64));
 
             cookies.add(general_cookie);
 
@@ -600,7 +600,7 @@ pub fn match_auth(
             general_cookie.set_http_only(true);
             general_cookie.set_secure(true);
             general_cookie.set_same_site(SameSite::Lax);
-            general_cookie.set_max_age(Duration::hours(24));
+            general_cookie.set_max_age(Duration::hours(8));
 
             cookies.add(general_cookie);            
 
@@ -653,7 +653,7 @@ pub fn match_auth(
         general_cookie.set_http_only(true);
         general_cookie.set_secure(true);
         general_cookie.set_same_site(SameSite::Lax);
-        general_cookie.set_max_age(Duration::hours(24));
+        general_cookie.set_max_age(Duration::hours(8));
 
         cookies.add(general_cookie);
 

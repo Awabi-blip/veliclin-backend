@@ -84,7 +84,6 @@ BEGIN
 END;
 $$ language plpgsql;
 
-select * from clinics;
 
 CREATE EXTENSION pgtap;
 
@@ -164,14 +163,6 @@ begin
 end;
 $$ language plpgsql;
 
-    
 
 #taha test account with clinic    = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 
 #taha test account without clinic = '01a08493-22e5-7800-b28b-49fd98035d05'
-select * from app_users where id = '01a08493-22e5-7800-b28b-49fd98035d05';
-BEGIN;
-
--- Automatically discovers and runs all functions matching 'test_%'
-select * from clinics;
-
-select * from staffs_in_clinics where clinic_id = '01a06173-6dbf-7314-937e-1386bc4fe707';
