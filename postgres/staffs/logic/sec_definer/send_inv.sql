@@ -1,5 +1,6 @@
 -- Active: 1786733926332@@127.0.0.1@5433@veliclin_database
 
+
 CREATE OR REPLACE PROCEDURE send_invitations(
     p_receiver_email CITEXT,
     p_role_invited_for e_staff_role
@@ -87,10 +88,46 @@ $$ language plpgsql;
 
 CREATE EXTENSION pgtap;
 
-create or replace function tests_send_invitations_should_pass_becauser_owner_sends_invite()
+#taha test account with clinic owner   = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 (only owner)
+#taha test account without clinic      = '01a08493-22e5-7800-b28b-49fd98035d05'
+#awab test account with clinic owner + manager = awabhero34@gmail.com, 01a1901c-54a3-7224-b1b2-204d651d3f3a
+
+create or replace function test_send_invitations_should_pass_because_owner_with_manager_role_sends_invite()
+returns setof text as $$
+begin                                   --'awabhero34@gmail.com owner+manager of Majima x Makoto'
+    perform set_config('myapp.user_id', '01a1901c-54a3-7224-b1b2-204d651d3f3a', true);
+
+    return next lives_ok(        
+        $q$  CALL send_invitations(
+            'tahaadnanawan@gmail.com'::CITEXT,
+            'Doctor'::e_staff_role)
+        $q$,
+        'Send invitations should execute successfully because owner+manager invites'
+        );    
+end;
+$$ language plpgsql;
+
+
+create or replace function test_send_invitations_should_pass_because_owner_with_doctorh_role_sends_invite()
+returns setof text as $$
+begin                                 --'awabzero34@gmail.com owner+doctor of Raiden'
+    perform set_config('myapp.user_id', '019f8caa-a51a-7e7f-8208-403bc23616b8', true);
+
+    return next lives_ok(        
+        $q$  CALL send_invitations(
+            'tahaadnanawan@gmail.com'::CITEXT,
+            'Doctor'::e_staff_role)
+        $q$,
+        'Send invitations should execute successfully because owner+manager invites'
+        );    
+end;
+$$ language plpgsql;
+
+
+create or replace function tests_send_invitations_should_pass_because_owner_sends_invite()
 returns setof text as $$
 begin
-    
+                                        --darkdaredevil575@gmail.com (owner only)
     perform set_config('myapp.user_id', '01a03e8a-e7fc-7a52-b510-a7dc3b784923', true);
     
     return next lives_ok(        
@@ -98,9 +135,25 @@ begin
             'tahaadnanawan@gmail.com'::CITEXT,
             'Doctor'::e_staff_role)
         $q$,
-        'Send invitations should execute successfully because owner_invites'
+        'Send invitations should execute successfully because owner only invites'
     );
 
+end;
+$$ language plpgsql;
+
+create or replace function test_send_invitations_should_pass_because_manager_without_owner_sends_invite()
+returns setof text as $$
+begin                               
+                                      -- kazmikhan676@gmail.com (manager of Test Clinic)
+    perform set_config('myapp.user_id', '01a1a115-9b56-7f9b-a1cb-2a347933aa2f', true);
+
+    return next lives_ok(        
+        $q$  CALL send_invitations(
+            'tahaadnanawan@gmail.com'::CITEXT,
+            'Doctor'::e_staff_role)
+        $q$,
+        'Send invitations should execute successfully because owner+manager invites'
+        );    
 end;
 $$ language plpgsql;
 
@@ -109,7 +162,7 @@ $$ language plpgsql;
 create or replace function test_send_invitations_should_fail_because_doctor_sends_invite()
 returns setof text as $$
 begin
-
+                                        --darkdaredevil20@gmail.com (doctor only)
     perform set_config('myapp.user_id', '01a07759-3b0e-7c2a-980d-fe8ee75586d3', true);
 
     return next throws_ok(
@@ -145,7 +198,7 @@ $$ language plpgsql;
 create or replace function test_send_invitations_should_fail_because_self_invite()
 returns setof text as $$
 begin
-    
+                                        --darkdaredevil575@gmail.com (owner only)
     perform set_config('myapp.user_id', '01a03e8a-e7fc-7a52-b510-a7dc3b784923', true);
     
     return next throws_ok(
@@ -179,9 +232,10 @@ end;
 $$ language plpgsql;
 
 
-#taha test account with clinic    = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 (only owner)
-#taha test account without clinic = '01a08493-22e5-7800-b28b-49fd98035d05'
+#taha test account with clinic owner   = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 (only owner)
+#taha test account without clinic      = '01a08493-22e5-7800-b28b-49fd98035d05'
+#awab test account with clinic owner + manager = awabhero34@gmail.com, 01a1901c-54a3-7224-b1b2-204d651d3f3a
 
 
-select * from staffs_in_clinics join clinics on staffs_in_clinics.clinic_id = clinics.clinic_id;
-select * from app_users where id = '01a07759-3b0e-7c2a-980d-fe8ee75586d3';
+select * from clinics;
+select * from app_users where id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923';

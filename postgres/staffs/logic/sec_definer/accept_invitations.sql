@@ -59,7 +59,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-create or replace function tests_accept_invitations_should_pass()
+
+create or replace function tests_accept_invitations_should_pass_when_the_person_who_was_invited_accepts_it()
 returns setof text as $$
 declare
     v_invitation_id INT;
@@ -82,7 +83,7 @@ begin
 
     return next lives_ok(        
         format($q$ CALL accept_invitations(%s) $q$, v_invitation_id),
-        'accept_invitations should execute successfully'
+        'accept_invitations should execute successfully because the person invited accept it'
     );
 
 end;
@@ -140,7 +141,7 @@ begin
         format($q$ CALL accept_invitations(%s) $q$, v_invitation_id),
         'P2001',
         'the inv id does not belong to you',
-        'another user cannot accept this invitation'
+        'another user (RM) cannot accept this invitation'
     );
 end;
 $$ language plpgsql;

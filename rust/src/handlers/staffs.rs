@@ -52,6 +52,7 @@ pub async fn send_invitation(
     let user = get_user(&cookie)
     .map_err(|_| ApiError::Unauthorized)?;
 
+    
     if !user.owner && !matches!(user.user_role, StaffRole::Manager)  {
         return Err(ApiError::Unauthorized)
     }
