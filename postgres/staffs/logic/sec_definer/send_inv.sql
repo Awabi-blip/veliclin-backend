@@ -51,7 +51,7 @@ BEGIN
     from staffs_in_clinics
     where staff_id = v_sender_id
     and   staff_role = 'Manager'::e_staff_role;
-
+    
     if not found then
         select clinic_id into v_clinic_id
         from clinics
@@ -63,6 +63,16 @@ BEGIN
             message = 'you are unauthorised to do this action';  
         end if;
 
+    end if;
+
+    -- if staff exists from before then reject
+    if exists (
+        select 1 from staffs_in_clinics
+        where staff_id = v_receiver_id
+        and clinic_id  = v_clinic_id
+    ) then raise exception using
+        errcode = 'P2001',
+        message = 'This person already exists in your clinic';
     end if;
     
 
@@ -91,8 +101,9 @@ CREATE EXTENSION pgtap;
 #taha test account with clinic owner   = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 (only owner)
 #taha test account without clinic      = '01a08493-22e5-7800-b28b-49fd98035d05'
 #awab test account with clinic owner + manager = awabhero34@gmail.com, 01a1901c-54a3-7224-b1b2-204d651d3f3a
+drop function test_send_invitations_should_pass_because_owner_with_manager_role_sends_invite;
 
-create or replace function test_send_invitations_should_pass_because_owner_with_manager_role_sends_invite()
+create or replace function test_send_invitations_passes_because_owner_manager_invites()
 returns setof text as $$
 begin                                   --'awabhero34@gmail.com owner+manager of Majima x Makoto'
     perform set_config('myapp.user_id', '01a1901c-54a3-7224-b1b2-204d651d3f3a', true);
@@ -107,8 +118,7 @@ begin                                   --'awabhero34@gmail.com owner+manager of
 end;
 $$ language plpgsql;
 
-
-create or replace function test_send_invitations_should_pass_because_owner_with_doctorh_role_sends_invite()
+create or replace function test_send_invitations_should_pass_because_owner_doctor_invites()
 returns setof text as $$
 begin                                 --'awabzero34@gmail.com owner+doctor of Raiden'
     perform set_config('myapp.user_id', '019f8caa-a51a-7e7f-8208-403bc23616b8', true);
@@ -118,13 +128,13 @@ begin                                 --'awabzero34@gmail.com owner+doctor of Ra
             'tahaadnanawan@gmail.com'::CITEXT,
             'Doctor'::e_staff_role)
         $q$,
-        'Send invitations should execute successfully because owner+manager invites'
+        'Send invitations should execute successfully because owner+doctor invites'
         );    
 end;
 $$ language plpgsql;
 
 
-create or replace function tests_send_invitations_should_pass_because_owner_sends_invite()
+create or replace function tests_send_invitations_should_pass_because_owner_only_invites()
 returns setof text as $$
 begin
                                         --darkdaredevil575@gmail.com (owner only)
@@ -141,7 +151,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function test_send_invitations_should_pass_because_manager_without_owner_sends_invite()
+create or replace function test_send_invitations_should_pass_because_manager_only_invites()
 returns setof text as $$
 begin                               
                                       -- kazmikhan676@gmail.com (manager of Test Clinic)
@@ -152,7 +162,7 @@ begin
             'tahaadnanawan@gmail.com'::CITEXT,
             'Doctor'::e_staff_role)
         $q$,
-        'Send invitations should execute successfully because owner+manager invites'
+        'Send invitations should execute successfully because manager only invites'
         );    
 end;
 $$ language plpgsql;
@@ -166,23 +176,42 @@ begin
     perform set_config('myapp.user_id', '01a07759-3b0e-7c2a-980d-fe8ee75586d3', true);
 
     return next throws_ok(
-        $q$ CALL send_invitation(
+        $q$ CALL send_invitations(
             'tahaadnanawan@gmail.com'::CITEXT,
             'Manager'::e_staff_role)
         $q$,
             'P2001',
-            'you are unauthorised to do this action'
+            'you are unauthorised to do this action',
             'fails because doctor user tried to invite someone'
     );
 
 end;
 $$ language plpgsql;
 
+create or replace function test_send_invitations_fails_as_staff_already_exists()
+returns setof text as $$
+begin
+                                        --darkdaredevil575@gmail.com (owner only of Test Clinic)
+    perform set_config('myapp.user_id', '01a03e8a-e7fc-7a52-b510-a7dc3b784923', true);
+    
+    return next throws_ok(        
+        $q$  CALL send_invitations(
+            'kazmikhan676@gmail.com'::CITEXT,
+            'Doctor'::e_staff_role)
+        $q$,
+        'P2001',
+        'This person already exists in your clinic',
+        'Send invitations should fail because kazmi khan already exists in Test Clinic'
+        );    
+end;
+$$ language plpgsql;
+
+
 create or replace function test_send_invitations_fails_when_unauthenticated()
 returns setof text as $$
 begin
 
-    perform set_config('myapp.user_id', '', true);
+    perform set_config('myapp.,user_id', '', true);
 
     return next throws_ok(
         $q$ CALL send_invitations('tahaadnanawan@gmail.com'::CITEXT, 'Doctor'::e_staff_role) $q$,
@@ -215,27 +244,8 @@ end;
 $$ language plpgsql;
 
 
---should fail because no user_id
-create or replace function test_send_invitations_fails_when_unauthenticated()
-returns setof text as $$
-begin
-
-    perform set_config('myapp.user_id', '', true);
-
-    return next throws_ok(
-        $q$ CALL send_invitations('tahaadnanawan@gmail.com'::CITEXT, 'Doctor'::e_staff_role) $q$,
-        'P2001',
-        'you are unauthorised to do this action',
-        'no user id is rejected'
-    );
-end;
-$$ language plpgsql;
-
 
 #taha test account with clinic owner   = 01a03e8a-e7fc-7a52-b510-a7dc3b784923 (only owner)
 #taha test account without clinic      = '01a08493-22e5-7800-b28b-49fd98035d05'
 #awab test account with clinic owner + manager = awabhero34@gmail.com, 01a1901c-54a3-7224-b1b2-204d651d3f3a
 
-
-select * from clinics;
-select * from app_users where id = '01a03e8a-e7fc-7a52-b510-a7dc3b784923';

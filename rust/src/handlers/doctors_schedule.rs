@@ -116,7 +116,8 @@ pub async fn view_doctors_schedule(
         time_shift_ends,
         day_shift_ends as "day_shift_ends: WorkingDays"
         FROM doctors_schedule 
-        WHERE doctor_id = $1"#, 
+        WHERE doctor_id = $1
+        AND   is_deleted = FALSE"#, 
         doctor_id
     ).fetch_all(&mut *conn)
     .await?;

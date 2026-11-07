@@ -2,3 +2,4 @@
 /logs
 .env
 connect_db.sh
+.sqlx

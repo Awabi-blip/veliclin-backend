@@ -26,18 +26,7 @@ CREATE TABLE IF NOT EXISTS doctors_schedule (
 );
 
 -- Shift 1: Monday 08:00–16:00 (same day)
-INSERT INTO doctors_schedule 
-    (doctor_id, doctor_role, clinic_id, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES 
-    ('019f8cbb-caf8-7fb4-99e4-88421e1167c2', 'Doctor', '019f8cc7-dac4-7568-ae80-c74982b31409', '08:00', 'Monday', '16:00');
 
--- Shift 2: Monday 22:00–Tuesday 06:00 (crosse midnight)
-INSERT INTO doctors_schedule 
-    (doctor_id, doctor_role, clinic_id, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES 
-    ('019f8cbb-caf8-7fb4-99e4-88421e1167c2', 'Doctor', '019f8cc7-dac4-7568-ae80-c74982b31409', '22:00', 'Monday', '06:00');
-
-select * from doctors_schedule;
 
 select * from patients_in_clinics;
 

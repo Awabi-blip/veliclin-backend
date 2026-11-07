@@ -1,11 +1,13 @@
+-- Active: 1776099699305@@127.0.0.1@5432@cliniqo@public
 create or replace procedure delete_doctor_schedule(
     p_schedule_id         bigint,
     p_delete_appointments boolean
 )
+security definer
 as $$
 declare
     -- fetches current_user_id
-    v_staff_id        uuid           := current_setting('my_app.user_id')::uuid;
+    v_staff_id        uuid           := current_setting('myapp.user_id')::uuid;
     
     --checks if the clinic exists, where the current_user who is v_staff_id
     --exists
@@ -101,3 +103,8 @@ begin
 
 end;
 $$ language plpgsql;
+
+
+select * from doctors_schedule;
+
+alter table doctors_schedule add column is_deleted BOOLEAN DEFAULT FALSE

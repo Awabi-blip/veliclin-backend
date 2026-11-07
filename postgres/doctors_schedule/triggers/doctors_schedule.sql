@@ -8,22 +8,25 @@ BEGIN
 
     RAISE NOTICE 'ds: %, de: %', ds, de;
 
-    if de = 1 and ds != 1 --if start day is monday and end day is not monday only then wrap
+    if de = 1 and ds != 1
     	then de := 8;
     end if;
 
-    RAISE NOTICE 'de after wrap check: %', de;
+    --monday start and monday end is fine, but anything else, 
+    --if monday is where ur appointment is ending then 
+    --it must mean it would start on sunday
+    -- if day_end is monday and day_start is sunday then 
+    -- 8-7 works perfectly
+    -- if day_end is sunday and day_start is saturday then 
+    -- 7-6 works perfectly.
 
-    if de - ds not in (0,1) or then
-        RAISE NOTICE 'FAIL — spans more than 1 day: de - ds = %', de - ds;
-        raise exception '';
+    if de - ds not in (0,1) then
+        raise exception using 
+        errcode = 'P2001', 
+        message = 'Difference between day end and day start is zero or one';
     end if;  
 
-    RAISE NOTICE 'span check passed';
-
     if NEW.day_shift_starts != NEW.day_shift_ends then
-
-        RAISE NOTICE 'rollover detected — checking overlap';
         
         --day_shift_starts = Monday
         --day_shift_ends   = Tuesday
@@ -67,10 +70,13 @@ BEGIN
             (NEW.time_shift_starts, '23:59:00'::TIME))
 
         ))
-        ) then 
-            RAISE NOTICE 'FAIL — overlap found';
-            raise exception 'no';
+        ) then
+        raise exception using 
+            errcode = 'P2001', 
+            message = 'Appointment is outside of doctor''s schedule';
         end if;
+
+        
 
     elseif NEW.day_shift_starts = NEW.day_shift_ends then
         if exists (SELECT 1 FROM doctors_schedule WHERE
@@ -105,7 +111,9 @@ BEGIN
             ))
  
         then 
-            raise exception 'no';
+        raise exception using 
+        errcode = 'P2001', 
+        message = 'schedule out of sync with previous added schedules';
         end if;
     
     end if;
@@ -131,30 +139,5 @@ AFTER INSERT ON doctors_schedule
 FOR EACH ROW
 EXECUTE FUNCTION f();
 
-INSERT INTO doctors_schedule (doctor_id, doctor_role, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES ('019e4f5c-1995-72de-9ed3-09208984b11a', 'Doctor', '23:00:00', 'Monday', '01:00:00');
-
-INSERT INTO doctors_schedule (doctor_id, doctor_role, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES ('019e4f5c-1995-72de-9ed3-09208984b11a', 'Doctor', '08:00:00', 'Wednesday', '16:00:00');
-
-INSERT INTO doctors_schedule (doctor_id, doctor_role, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES ('019e4f5c-1995-72de-9ed3-09208984b11a', 'Doctor', '22:30:00', 'Monday', '03:00:00');
 
 
--- this didnt work, so perfect
-INSERT INTO doctors_schedule (doctor_id, doctor_role, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES ('019e4f5c-1995-72de-9ed3-09208984b11a', 'Doctor', '00:00:00', 'Tuesday'::e_working_days, '00:30:00');
-
---its rainin its not working wohoo
-INSERT INTO doctors_schedule (doctor_id, doctor_role, time_shift_starts, day_shift_starts, time_shift_ends)
-VALUES ('019e4f5c-1995-72de-9ed3-09208984b11a', 'Doctor', '15:00:00', 'Wednesday'::e_working_days, '02:00:00');
-
-SELECT (
-  '00:00:00'::TIME,
-  '01:00:00'::TIME
-)
-OVERLAPS
-(
-  '00:00:00'::TIME,
-  '00:30:00'::TIME
-) AS overlapsornot;
