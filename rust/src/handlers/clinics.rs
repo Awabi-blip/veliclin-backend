@@ -24,7 +24,7 @@ use tower_http::trace::TraceLayer;
 pub fn clinics_routes() -> ApiRouter<Client>{
     ApiRouter::new()
         .api_route("/clinics", post(create_clinic))
-        .api_route("/clinics/{clinic_id}", get(view_clinic))
+        .api_route("/clinics/{clinic_id}", get(view_clinic).patch(update_clinic_banner))
         .api_route("/clinics/deletion/request", post(create_otp_delete_clinic))
         .api_route("/clinics/deletion/confirm", post(enter_otp_delete_clinic))
 }
@@ -32,6 +32,105 @@ pub fn clinics_routes() -> ApiRouter<Client>{
 #[derive(Serialize, JsonSchema)]
 pub struct SuccessResponse {
     pub message : String
+}
+
+#[derive(serde::Deserialize, JsonSchema)]
+pub struct UpdateClinicBanner {
+    pub banner_url: String,
+}
+
+fn is_valid_clinic_banner_url(value: &str) -> bool {
+    const UPLOAD_PREFIX: &str = "/diyp8wkq/image/upload/";
+
+    if value.len() > 2048 || value.trim() != value {
+        return false;
+    }
+
+    let Ok(url) = reqwest::Url::parse(value) else {
+        return false;
+    };
+
+    url.scheme() == "https"
+        && url.host_str() == Some("res.cloudinary.com")
+        && url.username().is_empty()
+        && url.password().is_none()
+        && url.port().is_none()
+        && url.query().is_none()
+        && url.fragment().is_none()
+        && url.path().strip_prefix(UPLOAD_PREFIX).is_some_and(|image_path| {
+            !image_path.is_empty() && !image_path.starts_with('/')
+        })
+}
+
+#[tracing::instrument(skip(db, cookie, body), err(Debug))]
+pub async fn update_clinic_banner(
+    Extension(db): Extension<DatabaseDriver>,
+    NoApi(cookie): NoApi<Cookies>,
+    Path(clinic_id): Path<uuid::Uuid>,
+    Json(body): Json<UpdateClinicBanner>,
+) -> Result<Json<SuccessResponse>, ApiError> {
+    let user = get_user(&cookie)?;
+    if !user.owner || user.clinic_id != clinic_id {
+        return Err(ApiError::Unauthorized);
+    }
+
+    if !is_valid_clinic_banner_url(&body.banner_url) {
+        return Err(ApiError::BadRequest(
+            "Banner must be an HTTPS Cloudinary image URL for cloud diyp8wkq".to_string(),
+        ));
+    }
+
+    let mut conn = db.pool.acquire().await?;
+    db.set_rls(&mut conn, user.user_id).await?;
+
+    let result = sqlx::query(
+        "UPDATE clinics SET banner_url = $1 WHERE clinic_id = $2 AND owner_id = $3",
+    )
+    .bind(&body.banner_url)
+    .bind(clinic_id)
+    .bind(user.user_id)
+    .execute(&mut *conn)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(ApiError::NotFound("Clinic not found".to_string()));
+    }
+
+    Ok(Json(SuccessResponse {
+        message: "Clinic banner updated".to_string(),
+    }))
+}
+
+#[cfg(test)]
+mod clinic_banner_tests {
+    use super::is_valid_clinic_banner_url;
+
+    #[test]
+    fn accepts_secure_images_from_the_clinic_cloud() {
+        assert!(is_valid_clinic_banner_url(
+            "https://res.cloudinary.com/diyp8wkq/image/upload/v1794691000/clinics/banner.jpg"
+        ));
+        assert!(is_valid_clinic_banner_url(
+            "https://res.cloudinary.com/diyp8wkq/image/upload/c_fill,w_1200/clinic.png"
+        ));
+    }
+
+    #[test]
+    fn rejects_other_sources_and_invalid_image_paths() {
+        for url in [
+            "http://res.cloudinary.com/diyp8wkq/image/upload/banner.jpg",
+            "https://res.cloudinary.com/other-cloud/image/upload/banner.jpg",
+            "https://evil.example/diyp8wkq/image/upload/banner.jpg",
+            "https://res.cloudinary.com.evil.example/diyp8wkq/image/upload/banner.jpg",
+            "https://res.cloudinary.com/diyp8wkq/video/upload/banner.mp4",
+            "https://res.cloudinary.com/diyp8wkq/image/upload/",
+            "https://user@res.cloudinary.com/diyp8wkq/image/upload/banner.jpg",
+            "https://res.cloudinary.com/diyp8wkq/image/upload/banner.jpg?x=1",
+            " not a url ",
+        ] {
+            assert!(!is_valid_clinic_banner_url(url), "should reject {url}");
+        }
+    }
 }
 
 #[derive(serde::Deserialize, Validate, JsonSchema)]
