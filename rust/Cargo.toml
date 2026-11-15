@@ -6,16 +6,7 @@ edition = "2024"
 [dependencies]
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
-sqlx = { version = "0.8", 
-features = [
-"postgres", 
-"runtime-tokio", 
-"uuid", 
-"macros", 
-"rust_decimal", 
-"json", 
-"chrono", 
-"tls-rustls"] }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "uuid", "macros", "rust_decimal", "json", "chrono", "tls-rustls"] }
 
 # no separate rust_decimal entry needed
 dotenvy = "0.15"
